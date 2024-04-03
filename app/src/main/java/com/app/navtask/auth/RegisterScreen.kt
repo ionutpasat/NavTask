@@ -1,4 +1,4 @@
-package com.app.navtask.ui.composables.tabs
+package com.app.navtask.auth
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -15,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.app.navtask.FbViewModel
 import com.app.navtask.ui.components.BottomComponent
 import com.app.navtask.ui.components.CheckboxComponent
 import com.app.navtask.ui.components.HeadingTextComponent
@@ -24,7 +25,9 @@ import com.app.navtask.ui.components.PasswordTextFieldComponent
 
 @Composable
 fun RegisterScreen(onLoginButtonClicked: () -> Unit = {},
-                   onMainAppChange: () -> Unit = {}) {
+                   onMainAppChange: () -> Unit = {},
+                   vm: FbViewModel
+) {
     Surface(
         color = Color.White,
         modifier = Modifier

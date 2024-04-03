@@ -8,7 +8,7 @@ plugins {
 
 android {
     namespace = "com.app.navtask"
-    compileSdk = 33
+    compileSdk = 34
     defaultConfig {
         applicationId = "com.app.navtask"
         minSdk = 21
@@ -88,6 +88,7 @@ dependencies {
     // Dagger Hilt for Dependency Injection
     implementation(libs.hilt.android)
     kapt(libs.hilt.android.compiler)
+    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
 
     // Testing Libraries
     testImplementation(libs.junit)

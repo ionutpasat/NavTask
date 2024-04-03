@@ -1,6 +1,7 @@
 package com.app.navtask.nav
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Domain
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.HowToReg
@@ -30,6 +31,10 @@ sealed class NavItem {
     object Register :
         Item(
             path = NavPath.REGISTER.toString(), title = NavTitle.REGISTER, icon = Icons.Default.HowToReg)
+
+    object Success :
+        Item(
+            path = NavPath.SUCCESS.toString(), title = NavTitle.REGISTER, icon = Icons.Default.Check)
 
     object MainAppScreen :
         Item(

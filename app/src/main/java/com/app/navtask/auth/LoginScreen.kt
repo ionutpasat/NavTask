@@ -1,4 +1,4 @@
-package com.app.navtask.ui.composables.tabs
+package com.app.navtask.auth
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -35,11 +35,13 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.app.navtask.FbViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(onRegisterButtonClicked: () -> Unit = {},
-                onMainAppChange: () -> Unit = {}) {
+                onMainAppChange: () -> Unit = {},
+                vm: FbViewModel) {
     Surface(
         color = Color.White,
         modifier = Modifier
