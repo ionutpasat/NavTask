@@ -109,11 +109,11 @@ fun MyTextFieldComponent(labelValue: String, icon: ImageVector) {
             textValue = it
         },
         colors = TextFieldDefaults.outlinedTextFieldColors(
-            focusedBorderColor = Color.Green,
-            focusedLabelColor = Color.Green,
+            focusedBorderColor = Color(0xFF001F26),
+            focusedLabelColor = Color(0xFF001F26),
             cursorColor = Color.Black,
             containerColor = Color.White,
-            focusedLeadingIconColor = Color.Green,
+            focusedLeadingIconColor = Color(0xFF001F26),
         ),
         modifier = Modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.medium,
@@ -143,14 +143,18 @@ fun PasswordTextFieldComponent(labelValue: String, icon: ImageVector) {
         },
         value = password,
         onValueChange = {
+            // make /n (enter) not to be accepted
+            if (it.contains("\n")) {
+                return@OutlinedTextField
+            }
             password = it
         },
         colors = TextFieldDefaults.outlinedTextFieldColors(
-            focusedBorderColor = Color.Green,
-            focusedLabelColor = Color.Green,
+            focusedBorderColor = Color(0xFF001F26),
+            focusedLabelColor = Color(0xFF001F26),
             cursorColor = Color.Black,
             containerColor = Color.White,
-            focusedLeadingIconColor = Color.Green,
+            focusedLeadingIconColor = Color(0xFF001F26),
         ),
         modifier = Modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.medium,
@@ -255,7 +259,7 @@ fun BottomComponent(
                 Box(
                     modifier = Modifier
                         .background(
-                            brush = Brush.horizontalGradient(listOf(Color.DarkGray, Color.Blue)),
+                            brush = Brush.horizontalGradient(listOf(Color.DarkGray, Color(0xFF001F26))),
                             shape = RoundedCornerShape(50.dp)
                         )
                         .fillMaxWidth()
@@ -328,10 +332,10 @@ fun AccountQueryComponent(
     onMainAppChange: () -> Unit = {}
 ) {
     val annonatedString = buildAnnotatedString {
-        withStyle(style = SpanStyle(color = Color.Black, fontSize = 15.sp)) {
+        withStyle(style = SpanStyle(color = Color.Black, fontSize = 15.sp, fontWeight = FontWeight.Bold)) {
             append(textQuery)
         }
-        withStyle(style = SpanStyle(color = Color.DarkGray, fontSize = 15.sp)) {
+        withStyle(style = SpanStyle(color = Color(0xFF001F26), fontSize = 15.sp, fontWeight = FontWeight.Bold)) {
             pushStringAnnotation(tag = textClickable, annotation = textClickable)
             append(textClickable)
         }
@@ -345,9 +349,5 @@ fun AccountQueryComponent(
                 }
             }
     })
-//    if (nScreen == "Login") {
-//        NavTaskApp()
-//    } else if (nScreen == "Register") {
-//        MainAppScreen()
-//    }
 }
+

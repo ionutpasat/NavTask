@@ -15,7 +15,11 @@ fun MainAppScreens(bottomNavController : NavHostController, navController : NavH
     NavHost(bottomNavController, startDestination = NavItem.Home.path) {
         composable(NavItem.Home.path) { HomeScreen() }
         composable(NavItem.Search.path) { SearchScreen() }
-        composable(NavItem.List.path) { ListScreen() }
+        composable(NavItem.List.path) { ListScreen(
+            onButtonClicked = {
+                navController.navigate(NavItem.Login.path)
+            }
+        ) }
         composable(NavItem.Profile.path) { ProfileScreen(
             "User Name",
             "user@email.com",

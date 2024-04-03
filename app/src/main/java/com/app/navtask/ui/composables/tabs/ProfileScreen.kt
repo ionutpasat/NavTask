@@ -64,7 +64,7 @@ fun ProfileScreen(
             modifier = Modifier.size(120.dp)
         ) {
             Image(
-                painter = ColorPainter(Color.Green), // Placeholder for profile picture
+                painter = ColorPainter(Color(0xFF001F26)), // Placeholder for profile picture
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier

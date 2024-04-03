@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlinAndroid)
     alias(libs.plugins.kotlinKapt)
     alias(libs.plugins.daggerHilt)
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -57,7 +58,7 @@ dependencies {
 
     // Add the dependency for the Firebase Authentication library
     // When using the BoM, you don't specify versions in Firebase library dependencies
-    implementation("com.google.firebase:firebase-auth")
+    implementation("com.google.firebase:firebase-auth:22.3.1")
 
     // Jetpack Compose Platform
     implementation(platform(libs.compose.bom))
@@ -76,9 +77,13 @@ dependencies {
     // Core Libraries
     implementation(libs.core.ktx)
 
+    // Material Design Components
     implementation("androidx.compose.material:material-icons-extended:1.3.1")
     implementation("androidx.compose.material3:material3:1.1.2")
 
+    // Room Database
+    implementation("androidx.room:room-runtime:2.4.0")
+    kapt("androidx.room:room-compiler:2.4.0")
 
     // Dagger Hilt for Dependency Injection
     implementation(libs.hilt.android)

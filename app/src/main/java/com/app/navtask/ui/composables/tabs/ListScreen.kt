@@ -2,6 +2,7 @@ package com.app.navtask.ui.composables.tabs
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -34,7 +35,9 @@ import com.app.navtask.ui.theme.typography
  * Composable function that represents the list screen of the application.
  */
 @Composable
-fun ListScreen() {
+fun ListScreen(
+    onButtonClicked: () -> Unit
+) {
     val todoItems = listOf(
         listOf("Buy groceries", "Milk, bread, eggs", Priority.LOW),
         listOf("Finish homework", "Math assignment", Priority.MEDIUM),
@@ -53,7 +56,7 @@ fun ListScreen() {
             .padding(bottom = 80.dp) // Adjust the value as needed
     ){
         items(todoItems) { todo ->
-            TodoItem(title = todo[0].toString(), description = todo[1].toString(), priority = todo[2] as Priority)
+            TodoItem(title = todo[0].toString(), description = todo[1].toString(), priority = todo[2] as Priority, onButtonClicked)
         }
     }
 }
@@ -65,11 +68,14 @@ enum class Priority {
 }
 
 @Composable
-fun TodoItem(title: String, description: String, priority: Priority) {
+fun TodoItem(title: String, description: String, priority: Priority, onButtonClicked: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp),
+            .padding(vertical = 8.dp)
+            .clickable(onClick = {
+                onButtonClicked()
+            }),
         elevation = CardDefaults.cardElevation(defaultElevation = 5.dp)
     ) {
         Row(

@@ -10,14 +10,9 @@ androidx-test-ext-junit = "1.1.5"
 espresso-core = "3.5.1"
 plugin-android-app = "8.2.2"
 plugin-kotlin = "1.8.10"
-firebase-version = "23.0.0"
 
 [libraries]
 compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "compose-bom" }
-ui = { group = "androidx.compose.ui", name = "ui" }
-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
-material3 = { group = "androidx.compose.material3", name = "material3" }
 lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycle-runtime-ktx" }
 activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activity-compose" }
 navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigation-compose" }
@@ -30,7 +25,6 @@ espresso-core = { group = "androidx.test.espresso", name = "espresso-core", vers
 ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
 ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
-firebase-authentication = { group = "com.google.firebase", name = "firebase-auth", version.ref = "firebase-version" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "plugin-android-app" }
@@ -40,8 +34,4 @@ kotlinKapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "plugin-kotlin" }
 
 [bundles]
 compose = [
-    "ui",
-    "ui-graphics",
-    "ui-tooling-preview",
-    "material3"
 ]

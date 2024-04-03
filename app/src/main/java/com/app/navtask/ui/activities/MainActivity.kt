@@ -11,7 +11,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.rememberNavController
 import com.app.navtask.ui.composables.NavTaskApp
 import com.app.navtask.ui.theme.NavTaskTheme
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     /**
      * Called when the activity is starting. This is where most initialization should go:
