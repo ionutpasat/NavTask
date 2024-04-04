@@ -33,14 +33,3 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    val navController = rememberNavController()
-    NavTaskTheme {
-        Surface(modifier = Modifier.fillMaxSize()) {
-            NavTaskApp(navController = navController)
-        }
-    }
-}

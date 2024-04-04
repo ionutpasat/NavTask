@@ -11,6 +11,8 @@ import com.app.navtask.auth.LoginScreen
 import com.app.navtask.ui.composables.tabs.MainAppScreen
 import com.app.navtask.auth.RegisterScreen
 import com.app.navtask.auth.SuccessScreen
+import com.app.navtask.main.NotificationMessage
+import com.app.navtask.ui.composables.tabs.MapScreen
 
 /**
  * Composable function that defines the navigation screens and their corresponding destinations.
@@ -20,6 +22,9 @@ import com.app.navtask.auth.SuccessScreen
 @Composable
 fun NavigationScreens(navController: NavHostController) {
     val vm = hiltViewModel<FbViewModel>()
+
+    NotificationMessage(vm = vm)
+
     NavHost(navController, startDestination = NavItem.Login.path) {
         composable(NavItem.Login.path) { LoginScreen(
             onRegisterButtonClicked = {
@@ -37,11 +42,15 @@ fun NavigationScreens(navController: NavHostController) {
             onMainAppChange = {
                 navController.navigate(NavItem.MainAppScreen.path)
             },
+            onSuccessRegister = {
+                navController.navigate(NavItem.Success.path)
+            },
             vm = vm
         ) }
         composable(NavItem.Success.path) { SuccessScreen(
             vm = vm
         ) }
+        composable(NavItem.Map.path) { MapScreen() }
         composable(NavItem.MainAppScreen.path) {
             MainAppScreen(navController)
         }

@@ -7,6 +7,7 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.HowToReg
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Login
+import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 
@@ -35,6 +36,10 @@ sealed class NavItem {
     object Success :
         Item(
             path = NavPath.SUCCESS.toString(), title = NavTitle.REGISTER, icon = Icons.Default.Check)
+
+    object Map:
+        Item(
+            path = NavPath.MAP.toString(), title = NavTitle.MAP, icon = Icons.Default.Map)
 
     object MainAppScreen :
         Item(

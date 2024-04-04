@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.kotlinKapt)
     alias(libs.plugins.daggerHilt)
     id("com.google.gms.google-services")
+    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
 }
 
 android {
@@ -99,4 +100,10 @@ dependencies {
     // Debugging Tools
     debugImplementation(libs.ui.tooling)
     debugImplementation(libs.ui.test.manifest)
+
+    implementation("com.google.maps.android:maps-compose:2.2.0")
+    implementation("com.google.android.gms:play-services-maps:18.2.0")
+    implementation("com.google.android.gms:play-services-location:21.0.1")
+    implementation("com.google.maps.android:android-maps-utils:3.4.0")
+
 }

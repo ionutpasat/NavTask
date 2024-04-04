@@ -7,6 +7,7 @@ import androidx.navigation.compose.composable
 import com.app.navtask.nav.NavItem
 import com.app.navtask.ui.composables.tabs.HomeScreen
 import com.app.navtask.ui.composables.tabs.ListScreen
+import com.app.navtask.ui.composables.tabs.MapScreen
 import com.app.navtask.ui.composables.tabs.ProfileScreen
 import com.app.navtask.ui.composables.tabs.SearchScreen
 
@@ -17,7 +18,7 @@ fun MainAppScreens(bottomNavController : NavHostController, navController : NavH
         composable(NavItem.Search.path) { SearchScreen() }
         composable(NavItem.List.path) { ListScreen(
             onButtonClicked = {
-                navController.navigate(NavItem.Login.path)
+                navController.navigate(NavItem.Map.path)
             }
         ) }
         composable(NavItem.Profile.path) { ProfileScreen(

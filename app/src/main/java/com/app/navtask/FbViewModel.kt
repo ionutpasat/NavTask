@@ -34,7 +34,6 @@ class FbViewModel @Inject constructor(
         inProgress.value = true
         auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
-                inProgress.value = false
                 if (task.isSuccessful) {
                     signedIn.value = true
                     handleException(task.exception, "Login successful")

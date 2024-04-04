@@ -8,5 +8,6 @@ object NavTitle {
     const val LOGIN = "Login"
     const val REGISTER = "Register"
     const val SUCCESS = "Success"
+    const val MAP = "Map"
     const val MAINAPP = "MainApp"
 }
