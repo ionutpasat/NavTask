@@ -48,13 +48,17 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.app.navtask.FbViewModel
+import com.app.navtask.FsViewModel
 import com.app.navtask.R
+import com.app.navtask.ui.model.User
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(onRegisterButtonClicked: () -> Unit = {},
                 onMainAppChange: () -> Unit = {},
-                vm: FbViewModel) {
+                vm: FbViewModel,
+                db: FsViewModel
+) {
 
     val emty by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
@@ -148,7 +152,9 @@ fun LoginScreen(onRegisterButtonClicked: () -> Unit = {},
             } else {
                 errorE = true
             }
-        }) {
+        },
+            colors = ButtonDefaults.buttonColors(Color(0xFF0B667A)))
+        {
             Text(text = "Login")
         }
         Row (
@@ -163,6 +169,9 @@ fun LoginScreen(onRegisterButtonClicked: () -> Unit = {},
             )
         }
         if (vm.signedIn.value) {
+            db.addUser(
+                User("Mock Name", email, "07MockPhone", "Mock Address")
+            )
             onMainAppChange()
         }
         vm.signedIn.value = false

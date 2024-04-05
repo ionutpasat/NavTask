@@ -27,11 +27,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import com.app.navtask.FbViewModel
 
 @Composable
 fun ProfileScreen(
-    userName: String,
-    userEmail: String,
+    vm: FbViewModel,
     onLogoutButtonClicked: () -> Unit = {}
 ) {
     Column(
@@ -92,13 +92,13 @@ fun ProfileScreen(
         ) {
             Column() {
                 Text(
-                    text = "Name: $userName",
+                    text = "Name: ${vm.getSignedInUser()?.email}",
                     color = Color.Black,
                     style = MaterialTheme.typography.bodyLarge
                 )
                 Spacer(modifier = Modifier.height(20.dp))
                 Text(
-                    text = "Email: $userEmail",
+                    text = "Email: ${vm.getSignedInUser()?.email}",
                     color = Color.Black,
                     style = MaterialTheme.typography.bodyLarge
                 )

@@ -4,6 +4,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import com.app.navtask.ui.components.Event
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
@@ -44,10 +45,15 @@ class FbViewModel @Inject constructor(
             }
     }
 
+    fun getSignedInUser() : FirebaseUser? {
+        return auth.currentUser
+    }
+
     fun handleException(exception: Exception? = null, customMessage: String? = ""){
         exception?.printStackTrace()
         val errorMsg = exception?.localizedMessage ?: ""
         val message = if (customMessage.isNullOrEmpty()) errorMsg else "$customMessage: $errorMsg"
         popupNotification.value = Event(message)
     }
+
 }
