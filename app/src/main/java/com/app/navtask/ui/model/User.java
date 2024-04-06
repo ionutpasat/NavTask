@@ -3,14 +3,10 @@ package com.app.navtask.ui.model;
 public class User {
     private String name;
     private String email;
-    private String phone;
-    private String address;
 
-    public User(String name, String email, String phone, String address) {
+    public User(String name, String email) {
         this.name = name;
         this.email = email;
-        this.phone = phone;
-        this.address = address;
     }
 
     public String getName() {
@@ -19,13 +15,5 @@ public class User {
 
     public String getEmail() {
         return email;
-    }
-
-    public String getPhone() {
-        return phone;
-    }
-
-    public String getAddress() {
-        return address;
     }
 }

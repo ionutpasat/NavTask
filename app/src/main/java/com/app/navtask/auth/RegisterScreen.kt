@@ -30,11 +30,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.app.navtask.FbViewModel
+import com.app.navtask.FsViewModel
 import com.app.navtask.R
 import com.app.navtask.ui.components.BottomComponent
 import com.app.navtask.ui.components.CheckboxComponent
@@ -42,14 +46,18 @@ import com.app.navtask.ui.components.HeadingTextComponent
 import com.app.navtask.ui.components.MyTextFieldComponent
 import com.app.navtask.ui.components.NormalTextComponent
 import com.app.navtask.ui.components.PasswordTextFieldComponent
+import com.app.navtask.ui.model.User
 
 @Composable
 fun RegisterScreen(onLoginButtonClicked: () -> Unit = {},
                    onMainAppChange: () -> Unit = {},
                    onSuccessRegister: () -> Unit = {},
-                   vm: FbViewModel
+                   vm: FbViewModel,
+                   db: FsViewModel
 ) {
     val emty by remember { mutableStateOf("") }
+    var firstName by remember { mutableStateOf("") }
+    var lastName by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var cpassword by remember { mutableStateOf("") }
@@ -59,15 +67,80 @@ fun RegisterScreen(onLoginButtonClicked: () -> Unit = {},
     var errorP by remember { mutableStateOf(false) }
     var errorC by remember { mutableStateOf(false) }
     var errorCP by remember { mutableStateOf(false) }
+    var errorF by remember { mutableStateOf(false) }
+    var errorL by remember { mutableStateOf(false) }
     var plength by remember { mutableStateOf(false) }
 
     Column (
         horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
     ) {
-        Spacer(modifier = Modifier.height(100.dp))
+        Text(
+            text = "Create an account",
+            style = TextStyle(fontSize = 40.sp, fontFamily = FontFamily.Cursive, color = Color(0xFF001F26))
+        )
+        Spacer(modifier = Modifier.height(20.dp))
+        if (errorF) {
+            Text(
+                text = "Enter first name",
+                color = Color.Red
+            )
+        }
+        TextField(
+            value = firstName,
+            onValueChange = { firstName = it },
+            label = { Text("First Name") },
+            leadingIcon = {
+                Icon(painter = painterResource(id = R.drawable.baseline_person_24),
+                    contentDescription = null) },
+            trailingIcon = {
+                if (firstName.isNotEmpty()) {
+                    IconButton(onClick = { firstName = emty}) {
+                        Icon(painter = painterResource(id = R.drawable.baseline_close_24),
+                            contentDescription = null
+                        )
+                    }
+                }
+            },
+            keyboardOptions = KeyboardOptions(
+                imeAction = ImeAction.Next
+            ),
+            singleLine = true
+        )
+        Spacer(modifier = Modifier.height(30.dp))
+
+        if (errorL) {
+            Text(
+                text = "Enter last name",
+                color = Color.Red
+            )
+        }
+        TextField(
+            value = lastName,
+            onValueChange = { lastName = it },
+            label = { Text("Last Name") },
+            leadingIcon = {
+                Icon(painter = painterResource(id = R.drawable.baseline_person_24),
+                    contentDescription = null) },
+            trailingIcon = {
+                if (lastName.isNotEmpty()) {
+                    IconButton(onClick = { lastName = emty}) {
+                        Icon(painter = painterResource(id = R.drawable.baseline_close_24),
+                            contentDescription = null
+                        )
+                    }
+                }
+            },
+            keyboardOptions = KeyboardOptions(
+                imeAction = ImeAction.Next
+            ),
+            singleLine = true
+        )
+        Spacer(modifier = Modifier.height(30.dp))
+
         if (errorE) {
             Text(
                 text = "Enter email",
@@ -184,33 +257,46 @@ fun RegisterScreen(onLoginButtonClicked: () -> Unit = {},
         )
         Spacer(modifier = Modifier.height(30.dp))
         Button(onClick = {
-            if (email.isNotEmpty()) {
-                errorE = false
-                if (password.isNotEmpty()) {
-                    errorP = false
-                    if (cpassword.isNotEmpty()) {
-                        errorC = false
-                        if (password == cpassword) {
-                            errorCP = false
-                            if (!plength) {
-                                vm.onSignup(email, password)
+            if (firstName.isNotEmpty()) {
+                errorF = false
+                if (lastName.isNotEmpty()) {
+                    errorL = false
+                    if (email.isNotEmpty()) {
+                        errorE = false
+                        if (password.isNotEmpty()) {
+                            errorP = false
+                            if (cpassword.isNotEmpty()) {
+                                errorC = false
+                                if (password == cpassword) {
+                                    errorCP = false
+                                    if (!plength) {
+                                        vm.onSignup(email, password)
+                                    }
+                                } else {
+                                    errorCP = true
+                                }
+                            } else {
+                                errorC = true
                             }
                         } else {
-                            errorCP = true
+                            errorP = true
                         }
                     } else {
-                        errorC = true
+                        errorE = true
                     }
                 } else {
-                    errorP = true
+                    errorL = true
                 }
             } else {
-                errorE = true
+                errorF = true
             }
         }) {
             Text(text = "Register")
         }
         if (vm.signedIn.value) {
+            db.addUser(
+                User("$firstName $lastName", email)
+            )
             onSuccessRegister()
         }
         vm.signedIn.value = false

@@ -51,14 +51,15 @@ fun NavigationScreens(navController: NavHostController) {
             onSuccessRegister = {
                 navController.navigate(NavItem.Success.path)
             },
-            vm = vm
+            vm = vm,
+            db = db
         ) }
         composable(NavItem.Success.path) { SuccessScreen(
             vm = vm
         ) }
         composable(NavItem.Map.path) { MapScreen() }
         composable(NavItem.MainAppScreen.path) {
-            MainAppScreen(navController, vm)
+            MainAppScreen(navController, vm, db)
         }
     }
 }

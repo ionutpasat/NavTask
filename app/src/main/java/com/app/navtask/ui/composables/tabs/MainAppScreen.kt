@@ -7,6 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.app.navtask.FbViewModel
+import com.app.navtask.FsViewModel
 import com.app.navtask.ui.composables.BottomNavigationBar
 import com.app.navtask.ui.composables.MainAppScreens
 
@@ -15,10 +16,10 @@ import com.app.navtask.ui.composables.MainAppScreens
  */
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun MainAppScreen(navController : NavHostController, vm : FbViewModel) {
+fun MainAppScreen(navController : NavHostController, vm : FbViewModel, db: FsViewModel) {
     val bottomBarController = rememberNavController()
 
     Scaffold(bottomBar = {
         BottomAppBar { BottomNavigationBar(bottomBarController) }
-    }) { MainAppScreens(bottomBarController, navController, vm) }
+    }) { MainAppScreens(bottomBarController, navController, vm, db) }
 }

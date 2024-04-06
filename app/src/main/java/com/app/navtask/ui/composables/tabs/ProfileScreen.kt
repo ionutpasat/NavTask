@@ -20,6 +20,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -28,10 +30,14 @@ import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import com.app.navtask.FbViewModel
+import com.app.navtask.FsViewModel
+import com.app.navtask.ui.model.User
+import kotlin.math.log
 
 @Composable
 fun ProfileScreen(
     vm: FbViewModel,
+    db: FsViewModel,
     onLogoutButtonClicked: () -> Unit = {}
 ) {
     Column(
@@ -91,8 +97,11 @@ fun ProfileScreen(
                 .padding(8.dp)
         ) {
             Column() {
+                val email = vm.getSignedInUser()?.email ?: "default@email.com"
+                db.fetchUserByEmail(email)
+                val user by db.user.collectAsState(null)
                 Text(
-                    text = "Name: ${vm.getSignedInUser()?.email}",
+                    text = "Name: ${user?.name ?: "Unknown"}",
                     color = Color.Black,
                     style = MaterialTheme.typography.bodyLarge
                 )

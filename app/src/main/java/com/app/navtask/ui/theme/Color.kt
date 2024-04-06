@@ -1,7 +1,7 @@
 package com.app.navtask.ui.theme
 import androidx.compose.ui.graphics.Color
 
-val md_theme_light_primary = Color(0xFF326B00)
+val md_theme_light_primary = Color(0xFF001F26)
 val md_theme_light_onPrimary = Color(0xFFFFFFFF)
 val md_theme_light_primaryContainer = Color(0xFFA1F964)
 val md_theme_light_onPrimaryContainer = Color(0xFF0B2000)
