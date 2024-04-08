@@ -107,4 +107,7 @@ dependencies {
     implementation("com.google.android.gms:play-services-location:21.0.1")
     implementation("com.google.maps.android:android-maps-utils:3.4.0")
 
+    implementation("androidx.activity:activity-compose:1.3.1")
+    implementation("com.google.accompanist:accompanist-coil:0.14.0")
+
 }

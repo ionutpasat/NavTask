@@ -54,6 +54,31 @@ class FsViewModel @Inject constructor(
             }
     }
 
+    fun updateUser(user: User){
+        db.collection("emails")
+            .document(user.email)
+            .get()
+            .addOnSuccessListener { document ->
+                if (document.exists()) {
+                    // User with the given email exists, update the user
+                    db.collection("users")
+                        .document(document.id)
+                        .set(user)
+                        .addOnSuccessListener {
+                            println("DocumentSnapshot updated successfully")
+                        }
+                        .addOnFailureListener { e ->
+                            println("Error updating document: $e")
+                        }
+                } else {
+                    println("No user with the given email exists")
+                }
+            }
+            .addOnFailureListener { e ->
+                println("Error checking document: $e")
+            }
+    }
+
     fun fetchUserByEmail(email: String) {
         viewModelScope.launch {
             val user = getUserByEmail(email)
@@ -63,7 +88,7 @@ class FsViewModel @Inject constructor(
 
     private suspend fun getUserByEmail(email: String): User? {
         try {
-            val document = db.collection("emails")
+            val document = db.collection("users")
                 .document(email)
                 .get()
                 .await()
