@@ -2,9 +2,13 @@ package com.app.navtask.ui.composables
 
 import androidx.compose.runtime.Composable
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.room.Room
+import androidx.room.RoomDatabase
 import com.app.navtask.FbViewModel
 import com.app.navtask.FsViewModel
 import com.app.navtask.nav.NavItem
@@ -14,6 +18,8 @@ import com.app.navtask.auth.RegisterScreen
 import com.app.navtask.auth.SuccessScreen
 import com.app.navtask.main.NotificationMessage
 import com.app.navtask.ui.composables.tabs.MapScreen
+import com.app.navtask.ui.model.Db
+import com.app.navtask.ui.model.UserViewModel
 import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
@@ -24,9 +30,8 @@ import com.google.firebase.ktx.Firebase
  * @param navController The navigation controller used for handling navigation between screens.
  */
 @Composable
-fun NavigationScreens(navController: NavHostController) {
+fun NavigationScreens(navController: NavHostController, userVm: UserViewModel) {
     val vm = hiltViewModel<FbViewModel>()
-    val db = hiltViewModel<FsViewModel>()
 
     NotificationMessage(vm = vm)
 
@@ -39,7 +44,7 @@ fun NavigationScreens(navController: NavHostController) {
                 navController.navigate(NavItem.MainAppScreen.path)
             },
             vm = vm,
-            db = db
+            userVm = userVm
         ) }
         composable(NavItem.Register.path) { RegisterScreen(
             onLoginButtonClicked = {
@@ -52,14 +57,14 @@ fun NavigationScreens(navController: NavHostController) {
                 navController.navigate(NavItem.Success.path)
             },
             vm = vm,
-            db = db
+            userVm = userVm
         ) }
         composable(NavItem.Success.path) { SuccessScreen(
             vm = vm
         ) }
         composable(NavItem.Map.path) { MapScreen() }
         composable(NavItem.MainAppScreen.path) {
-            MainAppScreen(navController, vm, db)
+            MainAppScreen(navController, vm, userVm)
         }
     }
 }

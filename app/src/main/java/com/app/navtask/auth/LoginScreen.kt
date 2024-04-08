@@ -40,13 +40,14 @@ import androidx.compose.ui.unit.sp
 import com.app.navtask.FbViewModel
 import com.app.navtask.FsViewModel
 import com.app.navtask.R
+import com.app.navtask.ui.model.UserViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(onRegisterButtonClicked: () -> Unit = {},
                 onMainAppChange: () -> Unit = {},
                 vm: FbViewModel,
-                db: FsViewModel
+                userVm: UserViewModel
 ) {
 
     val emty by remember { mutableStateOf("") }

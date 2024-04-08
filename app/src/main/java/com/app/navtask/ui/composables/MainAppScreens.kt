@@ -1,5 +1,7 @@
 package com.app.navtask.ui.composables
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -12,9 +14,11 @@ import com.app.navtask.ui.composables.tabs.ListScreen
 import com.app.navtask.ui.composables.tabs.MapScreen
 import com.app.navtask.ui.composables.tabs.ProfileScreen
 import com.app.navtask.ui.composables.tabs.SearchScreen
+import com.app.navtask.ui.model.UserViewModel
 
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
-fun MainAppScreens(bottomNavController : NavHostController, navController : NavHostController, vm : FbViewModel, db: FsViewModel) {
+fun MainAppScreens(bottomNavController : NavHostController, navController : NavHostController, vm : FbViewModel, userVm: UserViewModel) {
     NavHost(bottomNavController, startDestination = NavItem.Home.path) {
         composable(NavItem.Home.path) { HomeScreen() }
         composable(NavItem.Search.path) { SearchScreen() }
@@ -25,7 +29,7 @@ fun MainAppScreens(bottomNavController : NavHostController, navController : NavH
         ) }
         composable(NavItem.Profile.path) { ProfileScreen(
             vm,
-            db,
+            userVm,
             onLogoutButtonClicked = {
                 vm.auth.signOut()
                 navController.navigate(NavItem.Login.path)

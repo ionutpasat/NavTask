@@ -1,9 +1,7 @@
 package com.app.navtask.ui.composables.tabs
 
-import android.content.Context
 import android.net.Uri
 import android.os.Build
-import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
@@ -26,39 +24,50 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import coil.annotation.ExperimentalCoilApi
 import coil.compose.rememberImagePainter
 import com.app.navtask.FbViewModel
-import com.app.navtask.FsViewModel
 import com.app.navtask.R
 import com.app.navtask.ui.model.User
+import com.app.navtask.ui.model.UserViewModel
 
+@OptIn(ExperimentalCoilApi::class)
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
 fun ProfileScreen(
     vm: FbViewModel,
-    db: FsViewModel,
+    userVm: UserViewModel,
     onLogoutButtonClicked: () -> Unit = {}
 ) {
     val email = vm.getSignedInUser()?.email ?: "default@email.com"
-    db.fetchUserByEmail(email)
-    val user by db.user.collectAsState(null)
+    var userState by remember { mutableStateOf(User()) }
+    var imageUri by remember { mutableStateOf("") }
+
+    LaunchedEffect(email) {
+        val user = userVm.getUserByEmail(email)
+        if (user != null) {
+            userState = user
+            imageUri = user.profileImageUri
+        }
+    }
 
     val pickImageLauncher = rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri: Uri? ->
-        val updatedUser = user?.copy(profileImageUri = uri.toString()) ?: User(email = email, profileImageUri = uri.toString())
-        db.updateUser(updatedUser)
+        if (uri != null) {
+            userState.profileImageUri = uri.toString()
+            userVm.addUser(userState.copy())
+            imageUri = uri.toString()
+        }
     }
 
     Column(
@@ -90,12 +99,9 @@ fun ProfileScreen(
         Box(
             modifier = Modifier.size(120.dp)
         ) {
-            val imageUri = remember { mutableStateOf<Uri?>(null) }
-            imageUri.value = Uri.parse(user?.profileImageUri)
-
             Image(
-                painter = if (imageUri != null)
-                    rememberImagePainter(data = imageUri.value)
+                painter = if (imageUri.isNotEmpty())
+                    rememberImagePainter(data = Uri.parse(imageUri))
                 else
                     painterResource(id = R.drawable.profile_image_placeholder),
                 contentDescription = null,
@@ -103,7 +109,7 @@ fun ProfileScreen(
                 modifier = Modifier
                     .size(120.dp)
                     .clip(CircleShape)
-                    .clickable { pickImageLauncher.launch("image/*") }
+                    .clickable { pickImageLauncher.launch("image/*") },
             )
         }
 
@@ -125,9 +131,9 @@ fun ProfileScreen(
                 .wrapContentSize()
                 .padding(8.dp)
         ) {
-            Column() {
+            Column {
                 Text(
-                    text = "Name: ${user?.name ?: ""}",
+                    text = "Name: ${userState.name}",
                     color = Color.Black,
                     style = MaterialTheme.typography.bodyLarge
                 )

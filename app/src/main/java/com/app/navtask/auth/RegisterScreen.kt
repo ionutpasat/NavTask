@@ -47,13 +47,14 @@ import com.app.navtask.ui.components.MyTextFieldComponent
 import com.app.navtask.ui.components.NormalTextComponent
 import com.app.navtask.ui.components.PasswordTextFieldComponent
 import com.app.navtask.ui.model.User
+import com.app.navtask.ui.model.UserViewModel
 
 @Composable
 fun RegisterScreen(onLoginButtonClicked: () -> Unit = {},
                    onMainAppChange: () -> Unit = {},
                    onSuccessRegister: () -> Unit = {},
                    vm: FbViewModel,
-                   db: FsViewModel
+                   userVm: UserViewModel
 ) {
     val emty by remember { mutableStateOf("") }
     var firstName by remember { mutableStateOf("") }
@@ -294,9 +295,7 @@ fun RegisterScreen(onLoginButtonClicked: () -> Unit = {},
             Text(text = "Register")
         }
         if (vm.signedIn.value) {
-            db.addUser(
-                User("$firstName $lastName", email)
-            )
+            userVm.addUser(User(email = email, name = "$firstName $lastName"))
             onSuccessRegister()
         }
         vm.signedIn.value = false

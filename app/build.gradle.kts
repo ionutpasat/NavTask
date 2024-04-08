@@ -84,8 +84,11 @@ dependencies {
     implementation("androidx.compose.material3:material3:1.1.2")
 
     // Room Database
-    implementation("androidx.room:room-runtime:2.4.0")
-    kapt("androidx.room:room-compiler:2.4.0")
+    implementation("androidx.room:room-ktx:2.6.1")
+    kapt("androidx.room:room-compiler:2.6.1")
+
+    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.3.1")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.3.1")
 
     // Dagger Hilt for Dependency Injection
     implementation(libs.hilt.android)

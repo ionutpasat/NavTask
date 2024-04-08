@@ -10,16 +10,17 @@ import com.app.navtask.FbViewModel
 import com.app.navtask.FsViewModel
 import com.app.navtask.ui.composables.BottomNavigationBar
 import com.app.navtask.ui.composables.MainAppScreens
+import com.app.navtask.ui.model.UserViewModel
 
 /**
  * Composable function that represents the home screen of the application.
  */
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun MainAppScreen(navController : NavHostController, vm : FbViewModel, db: FsViewModel) {
+fun MainAppScreen(navController : NavHostController, vm : FbViewModel, userVm: UserViewModel) {
     val bottomBarController = rememberNavController()
 
     Scaffold(bottomBar = {
         BottomAppBar { BottomNavigationBar(bottomBarController) }
-    }) { MainAppScreens(bottomBarController, navController, vm, db) }
+    }) { MainAppScreens(bottomBarController, navController, vm, userVm) }
 }

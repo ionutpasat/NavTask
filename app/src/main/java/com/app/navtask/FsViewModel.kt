@@ -98,7 +98,7 @@ class FsViewModel @Inject constructor(
                 document.toObject(User::class.java)
             } else {
                 // No user with the given email exists
-                User("", "")
+                null
             }
         } catch (e: Exception) {
             return null
