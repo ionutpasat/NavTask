@@ -10,6 +10,7 @@ import androidx.compose.material.icons.filled.Login
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Task
 
 sealed class NavItem {
     object Home :
@@ -40,6 +41,10 @@ sealed class NavItem {
     object Map:
         Item(
             path = NavPath.MAP.toString(), title = NavTitle.MAP, icon = Icons.Default.Map)
+
+    object AddTask :
+        Item(
+            path = NavPath.ADDTASK.toString(), title = NavTitle.ADDTASK, icon = Icons.Default.Task)
 
     object MainAppScreen :
         Item(

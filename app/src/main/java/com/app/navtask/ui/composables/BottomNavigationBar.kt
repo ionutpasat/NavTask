@@ -18,7 +18,7 @@ import com.app.navtask.nav.NavItem
  * @param navController The navigation controller used for handling navigation between screens.
  */
 @Composable
-fun BottomNavigationBar(navController: NavHostController) {
+fun BottomNavigationBar(navController: NavHostController, isFromAddTask: Boolean = false) {
     val navItems = listOf(NavItem.Home, NavItem.Search, NavItem.List, NavItem.Profile)
     var selectedItem by rememberSaveable { mutableStateOf(0) }
 

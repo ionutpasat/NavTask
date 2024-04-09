@@ -55,10 +55,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavHostController
 import com.app.navtask.R
-import com.app.navtask.ui.composables.NavTaskApp
-import com.app.navtask.ui.composables.tabs.MainAppScreen
 
 @Composable
 fun NormalTextComponent(value: String) {

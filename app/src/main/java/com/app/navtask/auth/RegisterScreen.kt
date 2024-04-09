@@ -1,24 +1,17 @@
 package com.app.navtask.auth
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Email
-import androidx.compose.material.icons.outlined.Lock
-import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -37,17 +30,10 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.app.navtask.FbViewModel
-import com.app.navtask.FsViewModel
+import com.app.navtask.ui.viewmodel.FbViewModel
 import com.app.navtask.R
-import com.app.navtask.ui.components.BottomComponent
-import com.app.navtask.ui.components.CheckboxComponent
-import com.app.navtask.ui.components.HeadingTextComponent
-import com.app.navtask.ui.components.MyTextFieldComponent
-import com.app.navtask.ui.components.NormalTextComponent
-import com.app.navtask.ui.components.PasswordTextFieldComponent
 import com.app.navtask.ui.model.User
-import com.app.navtask.ui.model.UserViewModel
+import com.app.navtask.ui.viewmodel.UserViewModel
 
 @Composable
 fun RegisterScreen(onLoginButtonClicked: () -> Unit = {},

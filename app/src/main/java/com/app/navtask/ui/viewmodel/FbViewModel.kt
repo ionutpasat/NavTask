@@ -1,4 +1,4 @@
-package com.app.navtask
+package com.app.navtask.ui.viewmodel
 
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel

@@ -1,8 +1,9 @@
-package com.app.navtask.ui.model
+package com.app.navtask.ui.dao
 
 import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.Upsert
+import com.app.navtask.ui.model.User
 
 @Dao
 interface UserDao {

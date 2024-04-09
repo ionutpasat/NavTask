@@ -8,7 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
-import com.app.navtask.FbViewModel
+import com.app.navtask.ui.viewmodel.FbViewModel
 import com.app.navtask.R
 
 @Composable

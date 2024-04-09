@@ -12,6 +12,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import com.app.navtask.ui.viewmodel.TaskViewModel
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
@@ -23,7 +24,7 @@ import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 
 @Composable
-fun MapScreen() {
+fun MapScreen(taskVm : TaskViewModel) {
     val romania = LatLng(44.42666, 26.10243)
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(romania, 10f)

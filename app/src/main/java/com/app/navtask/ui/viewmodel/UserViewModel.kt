@@ -1,9 +1,10 @@
-package com.app.navtask.ui.model
+package com.app.navtask.ui.viewmodel
 
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.liveData
 import androidx.lifecycle.viewModelScope
+import com.app.navtask.ui.dao.UserDao
+import com.app.navtask.ui.model.User
 import kotlinx.coroutines.launch
 
 
