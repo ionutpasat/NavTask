@@ -112,5 +112,6 @@ dependencies {
 
     implementation("androidx.activity:activity-compose:1.3.1")
     implementation("com.google.accompanist:accompanist-coil:0.14.0")
+    implementation("io.coil-kt:coil-compose:2.5.0")
 
 }

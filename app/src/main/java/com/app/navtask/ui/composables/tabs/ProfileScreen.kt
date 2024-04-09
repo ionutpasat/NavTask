@@ -1,8 +1,10 @@
 package com.app.navtask.ui.composables.tabs
 
+import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
@@ -12,6 +14,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -33,16 +36,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import coil.annotation.ExperimentalCoilApi
+import coil.compose.AsyncImage
 import coil.compose.rememberImagePainter
 import com.app.navtask.FbViewModel
 import com.app.navtask.R
 import com.app.navtask.ui.model.User
 import com.app.navtask.ui.model.UserViewModel
 
-@OptIn(ExperimentalCoilApi::class)
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
 fun ProfileScreen(
@@ -52,23 +56,28 @@ fun ProfileScreen(
 ) {
     val email = vm.getSignedInUser()?.email ?: "default@email.com"
     var userState by remember { mutableStateOf(User()) }
-    var imageUri by remember { mutableStateOf("") }
+    var imageUri by remember { mutableStateOf<Uri?>(null) }
+    val context = LocalContext.current
 
     LaunchedEffect(email) {
         val user = userVm.getUserByEmail(email)
         if (user != null) {
             userState = user
-            imageUri = user.profileImageUri
+            imageUri = Uri.parse(user.profileImageUri)
         }
     }
 
-    val pickImageLauncher = rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri: Uri? ->
-        if (uri != null) {
+    val pickImageLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia(),
+        onResult = { uri -> if (uri != null) {
+            val flag = Intent.FLAG_GRANT_READ_URI_PERMISSION
+            context.contentResolver.takePersistableUriPermission(uri, flag)
+            imageUri = uri
             userState.profileImageUri = uri.toString()
             userVm.addUser(userState.copy())
-            imageUri = uri.toString()
         }
-    }
+        }
+    )
 
     Column(
         modifier = Modifier
@@ -99,18 +108,27 @@ fun ProfileScreen(
         Box(
             modifier = Modifier.size(120.dp)
         ) {
-            Image(
-                painter = if (imageUri.isNotEmpty())
-                    rememberImagePainter(data = Uri.parse(imageUri))
-                else
-                    painterResource(id = R.drawable.profile_image_placeholder),
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .size(120.dp)
-                    .clip(CircleShape)
-                    .clickable { pickImageLauncher.launch("image/*") },
-            )
+            if (imageUri != null && imageUri.toString().isNotEmpty()) {
+                AsyncImage(
+                    model = imageUri,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(120.dp)
+                        .clip(CircleShape)
+                        .clickable { pickImageLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))},
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                Image(
+                    painter = painterResource(id = R.drawable.profile_image_placeholder),
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .size(120.dp)
+                        .clip(CircleShape)
+                        .clickable { pickImageLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))},
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
