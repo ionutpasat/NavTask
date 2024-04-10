@@ -68,7 +68,9 @@ fun NavigationScreens(
         composable(NavItem.Success.path) { SuccessScreen(
             vm = vm
         ) }
-        composable(NavItem.Map.path) { MapScreen(taskVm) }
+        composable(NavItem.Map.path + "/{taskId}") { backStackEntry ->
+            MapScreen(taskVm, backStackEntry.arguments?.getString("taskId"))
+        }
         composable(NavItem.AddTask.path) { isFromAddTask = true
             AddTaskScreen(taskVm, onAddButtonClicked = {
                 navController.navigate(NavItem.MainAppScreen.path)

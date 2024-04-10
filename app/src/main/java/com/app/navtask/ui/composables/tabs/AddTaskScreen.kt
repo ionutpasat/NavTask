@@ -19,8 +19,10 @@ import com.app.navtask.ui.theme.typography
 import com.app.navtask.ui.viewmodel.TaskViewModel
 
 @Composable
-fun AddTaskScreen(taskVm: TaskViewModel,
-                  onAddButtonClicked: () -> Unit) {
+fun AddTaskScreen(
+    taskVm: TaskViewModel,
+    onAddButtonClicked: () -> Unit)
+{
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var priority by remember { mutableStateOf("") }

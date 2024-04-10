@@ -18,6 +18,11 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -29,34 +34,43 @@ import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.app.navtask.R
+import com.app.navtask.ui.model.Task
 import com.app.navtask.ui.theme.typography
+import com.app.navtask.ui.viewmodel.TaskViewModel
 
 /**
  * Composable function that represents the list screen of the application.
  */
 @Composable
 fun ListScreen(
-    onButtonClicked: () -> Unit
+    taskVm : TaskViewModel,
+    onMapButtonClicked: (taskId: String) -> Unit
 ) {
-    val todoItems = listOf(
-        listOf("Buy groceries", "Milk, bread, eggs", Priority.LOW),
-        listOf("Finish homework", "Math assignment", Priority.MEDIUM),
-        listOf("Call mom", "Discuss weekend plans", Priority.HIGH),
-        listOf("Go for a run", "5 km jog", Priority.LOW),
-        listOf("Read a book", "Chapter 3", Priority.MEDIUM),
-        listOf("Clean the house", "Living room, kitchen", Priority.HIGH),
-        listOf("Write a report", "Project summary", Priority.MEDIUM),
-        listOf("Attend meeting", "Team sync-up", Priority.HIGH),
-        listOf("Cook dinner", "Pasta with salad", Priority.LOW),
-        listOf("Practice guitar", "New chords", Priority.MEDIUM)
-    )
+    var taskList by remember { mutableStateOf<List<Task>>(emptyList()) }
+
+    LaunchedEffect(key1 = taskVm) {
+        taskList = taskVm.getAllTasks()
+    }
+
     LazyColumn (
         modifier = Modifier
             .fillMaxSize()
             .padding(bottom = 80.dp) // Adjust the value as needed
     ){
-        items(todoItems) { todo ->
-            TodoItem(title = todo[0].toString(), description = todo[1].toString(), priority = todo[2] as Priority, onButtonClicked)
+        items(taskList) { todo ->
+            TodoItem(
+                id = todo.id.toString(),
+                title = todo.title,
+                description = todo.description,
+                priority = when(todo.priority) {
+                    1 -> Priority.LOW
+                    2 -> Priority.MEDIUM
+                    3 -> Priority.HIGH
+                    else -> Priority.LOW
+                },
+                location = todo.location,
+                date = todo.date,
+                onMapButtonClicked)
         }
     }
 }
@@ -68,13 +82,20 @@ enum class Priority {
 }
 
 @Composable
-fun TodoItem(title: String, description: String, priority: Priority, onButtonClicked: () -> Unit) {
+fun TodoItem(
+    id: String,
+    title: String,
+    description: String,
+    priority: Priority,
+    location: String,
+    date: String,
+    onButtonClicked: (taskId: String) -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp)
             .clickable(onClick = {
-                onButtonClicked()
+                onButtonClicked(id)
             }),
         elevation = CardDefaults.cardElevation(defaultElevation = 5.dp)
     ) {

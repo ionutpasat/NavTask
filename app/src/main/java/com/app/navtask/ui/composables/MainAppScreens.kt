@@ -26,8 +26,9 @@ fun MainAppScreens(bottomNavController : NavHostController, navController : NavH
         ) }
         composable(NavItem.Search.path) { SearchScreen() }
         composable(NavItem.List.path) { ListScreen(
-            onButtonClicked = {
-                navController.navigate(NavItem.Map.path)
+            taskVm,
+            onMapButtonClicked = { taskId ->
+                navController.navigate(NavItem.Map.path + "/$taskId")
             }
         ) }
         composable(NavItem.Profile.path) { ProfileScreen(

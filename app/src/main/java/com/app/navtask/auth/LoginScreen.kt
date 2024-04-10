@@ -40,7 +40,6 @@ import com.app.navtask.ui.viewmodel.FbViewModel
 import com.app.navtask.R
 import com.app.navtask.ui.viewmodel.UserViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(onRegisterButtonClicked: () -> Unit = {},
                 onMainAppChange: () -> Unit = {},
