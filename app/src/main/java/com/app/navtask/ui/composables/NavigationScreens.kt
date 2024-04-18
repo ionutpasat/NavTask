@@ -66,7 +66,10 @@ fun NavigationScreens(
             userVm = userVm
         ) }
         composable(NavItem.Success.path) { SuccessScreen(
-            vm = vm
+            vm = vm,
+            onGoToLoginClicked = {
+                navController.navigate(NavItem.Login.path)
+            }
         ) }
         composable(NavItem.Map.path + "/{taskId}") { backStackEntry ->
             MapScreen(taskVm, backStackEntry.arguments?.getString("taskId"))

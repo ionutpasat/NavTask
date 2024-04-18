@@ -282,6 +282,7 @@ fun RegisterScreen(onLoginButtonClicked: () -> Unit = {},
         }
         if (vm.signedIn.value) {
             userVm.addUser(User(email = email, name = "$firstName $lastName"))
+            vm.auth.signOut()
             onSuccessRegister()
         }
         vm.signedIn.value = false

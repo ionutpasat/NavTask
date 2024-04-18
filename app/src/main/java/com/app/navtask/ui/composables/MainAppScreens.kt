@@ -17,7 +17,12 @@ import com.app.navtask.ui.viewmodel.UserViewModel
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
-fun MainAppScreens(bottomNavController : NavHostController, navController : NavHostController, vm : FbViewModel, userVm: UserViewModel, taskVm : TaskViewModel) {
+fun MainAppScreens(bottomNavController : NavHostController,
+                   navController : NavHostController,
+                   vm : FbViewModel,
+                   userVm: UserViewModel,
+                   taskVm : TaskViewModel,
+) {
     NavHost(bottomNavController, startDestination = NavItem.Home.path) {
         composable(NavItem.Home.path) { HomeScreen(
             onAddTaskButtonClicked = {
