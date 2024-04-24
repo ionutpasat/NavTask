@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.app.navtask.ui.dao.TaskDao
 import com.app.navtask.ui.model.Task
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class TaskViewModel(
@@ -11,7 +12,7 @@ class TaskViewModel(
 ) : ViewModel() {
 
         fun addTask(task: Task) {
-            viewModelScope.launch {
+            viewModelScope.launch(Dispatchers.Unconfined) {
                 taskDao.upsert(task)
             }
         }

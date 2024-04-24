@@ -19,15 +19,11 @@ interface WeatherService {
         @Query("daily") daily:String,
         @Query("start_date") startDate:String,
         @Query("end_date") endDate:String
-//        @FieldMap params: Map<String, String>
     ): Call<WeatherResponse?>
-
-    @GET("random")
-    fun getDog(): Call<Resp?>
 
     companion object {
         private const val BASE_URL = "https://api.open-meteo.com/v1/"
-        val instance by lazy {
+        val instance: WeatherService by lazy {
             Retrofit.Builder()
                 .baseUrl(BASE_URL)
                 .addConverterFactory(GsonConverterFactory.create())

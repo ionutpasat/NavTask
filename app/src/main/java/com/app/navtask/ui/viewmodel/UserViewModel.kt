@@ -5,6 +5,7 @@ import androidx.lifecycle.liveData
 import androidx.lifecycle.viewModelScope
 import com.app.navtask.ui.dao.UserDao
 import com.app.navtask.ui.model.User
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 
@@ -13,7 +14,7 @@ class UserViewModel(
 ) : ViewModel() {
 
     fun addUser(user: User) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.Unconfined) {
             dao.upsert(user)
         }
     }
@@ -22,9 +23,7 @@ class UserViewModel(
         return dao.getUserByEmail(email)
     }
 
-    fun getAllUsers(): List<User>? {
-        return liveData<List<User>> {
-            emit(dao.getAllUsers())
-        }.value
+    suspend fun getAllUsers(): List<User> {
+        return dao.getAllUsers()
     }
 }
