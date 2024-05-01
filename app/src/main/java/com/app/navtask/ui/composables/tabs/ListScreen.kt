@@ -104,7 +104,6 @@ fun TodoItem(
     date: String,
     onButtonClicked: (taskId: String) -> Unit)
 {
-//    getWeather(44.4375, 26.125, date)
     var temp by remember { mutableStateOf("") }
 
     LaunchedEffect(temp) {

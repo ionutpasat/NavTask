@@ -100,6 +100,7 @@ dependencies {
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.espresso.core)
     androidTestImplementation(libs.ui.test.junit4)
+    androidTestImplementation("com.squareup.okhttp3:mockwebserver:4.9.1")
 
     // Debugging Tools
     debugImplementation(libs.ui.tooling)
@@ -123,4 +124,6 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4")
     testImplementation("org.mockito.kotlin:mockito-kotlin:4.1.0")
+    testImplementation("com.squareup.okhttp3:mockwebserver:4.9.1")
+    testImplementation("androidx.arch.core:core-testing:2.1.0")
 }

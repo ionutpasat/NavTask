@@ -49,7 +49,7 @@ class FbViewModel @Inject constructor(
         return auth.currentUser
     }
 
-    fun handleException(exception: Exception? = null, customMessage: String? = ""){
+    private fun handleException(exception: Exception? = null, customMessage: String? = ""){
         exception?.printStackTrace()
         val errorMsg = exception?.localizedMessage ?: ""
         val message = if (customMessage.isNullOrEmpty()) errorMsg else "$customMessage: $errorMsg"
