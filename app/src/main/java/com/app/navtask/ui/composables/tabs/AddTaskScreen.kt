@@ -1,42 +1,57 @@
 package com.app.navtask.ui.composables.tabs
 
+import android.content.Context
+import android.location.Address
+import android.location.Geocoder
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextField
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
 import com.app.navtask.ui.model.Task
-import com.app.navtask.ui.theme.typography
 import com.app.navtask.ui.viewmodel.TaskViewModel
+import com.google.accompanist.insets.navigationBarsWithImePadding
+import com.google.android.gms.maps.model.LatLng
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -45,23 +60,45 @@ import java.util.Locale
 @Composable
 fun AddTaskScreen(
     taskVm: TaskViewModel,
-    onAddButtonClicked: () -> Unit)
+    onAddButtonClicked: () -> Unit,
+    navController: NavHostController
+)
 {
+    val context = LocalContext.current
+    var scrollState = rememberScrollState()
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var priority by remember { mutableStateOf("0") }
-    var location by remember { mutableStateOf("") }
+    var streetAndNumber by remember { mutableStateOf("") }
+    var city by remember { mutableStateOf("") }
+    var country by remember { mutableStateOf("") }
     var date by remember { mutableStateOf("") }
     var showDialog by remember { mutableStateOf(false) }
     var showDatePicker by remember { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState()
+    var coordinates: LatLng by remember { mutableStateOf(LatLng(44.42666, 26.10243)) }
+
+    LaunchedEffect(streetAndNumber, city, country) {
+        coordinates = fetchCoordinatesFromAddress(context, "$streetAndNumber, $city, $country") ?: LatLng(44.42666, 26.10243)
+    }
 
     Column(
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
+        modifier = Modifier
+            .fillMaxSize()
+            .imePadding()
+            .verticalScroll(scrollState),
         horizontalAlignment = Alignment.CenterHorizontally
     )
     {
+        IconButton(
+            onClick = { navController.popBackStack() },
+            modifier = Modifier.align(Alignment.Start)
+        ) {
+            Icon(Icons.Filled.ArrowBack, contentDescription = "Go back")
+        }
+
+        Spacer(modifier = Modifier.height(30.dp))
+
         Text(text = "Add Task", style = TextStyle(
             fontSize = 40.sp,
             fontFamily = FontFamily.Cursive,
@@ -74,7 +111,9 @@ fun AddTaskScreen(
         OutlinedTextField(
             value = title,
             onValueChange = { title = it },
-            label = { Text("Title") }
+            label = { Text("Title") },
+            singleLine = true,
+            modifier = Modifier.width(300.dp)
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -82,7 +121,39 @@ fun AddTaskScreen(
         OutlinedTextField(
             value = description,
             onValueChange = { description = it },
-            label = { Text("Description") }
+            label = { Text("Description") },
+            singleLine = true,
+            modifier = Modifier.width(300.dp)
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        OutlinedTextField(
+            value = streetAndNumber,
+            onValueChange = { streetAndNumber = it },
+            label = { Text("Street & No.") },
+            singleLine = true,
+            modifier = Modifier.width(300.dp)
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        OutlinedTextField(
+            value = city,
+            onValueChange = { city = it },
+            label = { Text("City") },
+            singleLine = true,
+            modifier = Modifier.width(300.dp)
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        OutlinedTextField(
+            value = country,
+            onValueChange = { country = it },
+            label = { Text("Country") },
+            singleLine = true,
+            modifier = Modifier.width(300.dp)
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -94,9 +165,10 @@ fun AddTaskScreen(
                     "2" -> "Medium"
                     "3" -> "High"
                     else -> "Low"
-                }
+                },
             ),
             onValueChange = { priority = it.text},
+            modifier = Modifier.width(300.dp),
             onClick = {
                 showDialog = true
             },
@@ -117,19 +189,19 @@ fun AddTaskScreen(
                 onDismissRequest = { showDialog = false },
             ) {
                 DropdownMenuItem(
-                    { Text("Low") },
+                    { Text("Low", color = Color.Green) },
                     onClick = {
                         showDialog = false
                         priority = "1"
                     })
                 DropdownMenuItem(
-                    { Text("Medium") },
+                    { Text("Medium", color = Color(0xFFffcc00)) },
                     onClick = {
                         showDialog = false
                         priority = "2"
                     })
                 DropdownMenuItem(
-                    { Text("High") },
+                    { Text("High", color = Color.Red) },
                     onClick = {
                         showDialog = false
                         priority = "3"
@@ -139,17 +211,10 @@ fun AddTaskScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        OutlinedTextField(
-            value = location,
-            onValueChange = { location = it },
-            label = { Text("Location") }
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
         ReadonlyTextField(
             value = TextFieldValue(text = date),
             onValueChange = { date = it.text},
+            modifier = Modifier.width(300.dp),
             onClick = {
                 showDatePicker = true
             },
@@ -169,7 +234,10 @@ fun AddTaskScreen(
                             showDatePicker = false
                             date = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).
                             format(Calendar.getInstance().apply {
-                                timeInMillis = datePickerState.selectedDateMillis!!
+                                timeInMillis = if (datePickerState.selectedDateMillis != null)
+                                    datePickerState.selectedDateMillis!!
+                                else
+                                    System.currentTimeMillis()
                             }.time)
                         }
                     ) { Text("OK") }
@@ -191,7 +259,9 @@ fun AddTaskScreen(
 
         Button(
             onClick = {
-                val task = Task(0, title, description, priority.toInt(), location, date)
+                val fullLocation = "$streetAndNumber, $city, $country"
+                val task = Task(0, title, description, priority.toInt(),
+                    fullLocation, coordinates.latitude, coordinates.longitude, date)
                 taskVm.addTask(task)
                 onAddButtonClicked()
             }
@@ -215,7 +285,14 @@ fun ReadonlyTextField(
             value = value,
             onValueChange = onValueChange,
             modifier = modifier,
-            label = label
+            label = label,
+            textStyle = TextStyle(color = when(value.text) {
+                "Low" -> Color.Green
+                "Medium" -> Color(0xFFffcc00)
+                "High" -> Color.Red
+                else -> Color.Black
+            }),
+            singleLine = true
         )
 
         Box(
@@ -223,5 +300,24 @@ fun ReadonlyTextField(
                 .matchParentSize()
                 .clickable(onClick = onClick),
         )
+    }
+}
+
+suspend fun fetchCoordinatesFromAddress(context: Context, address: String, maxResults: Int = 1): LatLng? {
+    return withContext(Dispatchers.IO) {
+        val geocoder = Geocoder(context)
+        try {
+            val addresses: MutableList<Address>? = geocoder.getFromLocationName(address, maxResults)
+            if (addresses?.isNotEmpty() == true) {
+                val latitude = addresses[0].latitude
+                val longitude = addresses[0].longitude
+                LatLng(latitude, longitude)
+            } else {
+                null // Address not found
+            }
+        } catch (e: IOException) {
+            e.printStackTrace()
+            null // Error occurred
+        }
     }
 }

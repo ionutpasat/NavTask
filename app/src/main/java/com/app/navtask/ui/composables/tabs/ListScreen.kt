@@ -1,13 +1,18 @@
 package com.app.navtask.ui.composables.tabs
 
 import android.util.Log
+import android.widget.Toast
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -32,22 +37,26 @@ import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.PaintingStyle
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.positionChange
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.app.navtask.R
 import com.app.navtask.ui.dao.WeatherService
-import com.app.navtask.ui.model.Resp
 import com.app.navtask.ui.model.Task
 import com.app.navtask.ui.model.WeatherResponse
+import com.app.navtask.ui.theme.md_theme_light_error
 import com.app.navtask.ui.theme.typography
 import com.app.navtask.ui.viewmodel.TaskViewModel
-import com.google.gson.FieldNamingPolicy
-import com.google.gson.GsonBuilder
+import kotlinx.coroutines.delay
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
+import kotlin.math.roundToInt
 
 
 /**
@@ -65,25 +74,37 @@ fun ListScreen(
         taskList = taskVm.getAllTasks()
     }
 
-    LazyColumn (
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(bottom = 80.dp) // Adjust the value as needed
-    ){
-        items(taskList) { todo ->
-            TodoItem(
-                id = todo.id.toString(),
-                title = todo.title,
-                description = todo.description,
-                priority = when(todo.priority) {
-                    1 -> Priority.LOW
-                    2 -> Priority.MEDIUM
-                    3 -> Priority.HIGH
-                    else -> Priority.LOW
-                },
-                location = todo.location,
-                date = todo.date,
-                onMapButtonClicked)
+    if (taskList.isEmpty()) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Text(
+                text = "You have no tasks yet! Click the + button in the Home section to add one",
+                style = typography.titleLarge,
+                color = md_theme_light_error
+            )
+        }
+    } else {
+
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(bottom = 80.dp) // Adjust the value as needed
+        ) {
+            items(taskList) { todo ->
+                TodoItem(
+                    id = todo.id.toString(),
+                    title = todo.title,
+                    description = todo.description,
+                    priority = when (todo.priority) {
+                        1 -> Priority.LOW
+                        2 -> Priority.MEDIUM
+                        3 -> Priority.HIGH
+                        else -> Priority.LOW
+                    },
+                    location = todo.location,
+                    date = todo.date,
+                    onMapButtonClicked
+                )
+            }
         }
     }
 }
@@ -103,8 +124,34 @@ fun TodoItem(
     location: String,
     date: String,
     onButtonClicked: (taskId: String) -> Unit)
+//    onSwipeAway: (taskId: String) -> Unit
 {
     var temp by remember { mutableStateOf("") }
+    var offset by remember { mutableStateOf(0f) }
+    var dismissRight by remember { mutableStateOf(false) }
+    var dismissLeft by remember { mutableStateOf(false) }
+    val density = LocalDensity.current.density
+    val context = LocalContext.current
+    val swipeThreshold = 400f
+    val sensitivityFactor = 3f
+
+    LaunchedEffect(dismissRight) {
+        if (dismissRight) {
+            delay(300)
+            Toast.makeText(context, "Swipe right  works", Toast.LENGTH_SHORT).show()
+            println("Swipe right works")
+            dismissRight = false
+        }
+    }
+
+    LaunchedEffect(dismissLeft) {
+        if (dismissLeft) {
+            delay(300)
+            Toast.makeText(context, "Swipe left works", Toast.LENGTH_SHORT).show()
+            println("Swipe left works")
+            dismissLeft = false
+        }
+    }
 
     LaunchedEffect(temp) {
         val call = WeatherService.instance.getWeather(44.4375.toString(), 26.125.toString(),"temperature_2m_max", date, date)
@@ -127,6 +174,29 @@ fun TodoItem(
 
     Card(
         modifier = Modifier
+            .offset { IntOffset(offset.roundToInt(), 0) }
+            .pointerInput(Unit) {
+                detectHorizontalDragGestures(onDragEnd = {
+                    offset = 0f
+                }) { change, dragAmount ->
+
+                    offset += (dragAmount / density) * sensitivityFactor
+                    when {
+                        offset > swipeThreshold -> {
+                            dismissRight = true
+                        }
+
+                        offset < -swipeThreshold -> {
+                            dismissLeft = true
+                        }
+                    }
+                    if (change.positionChange() != Offset.Zero) change.consume()
+                }
+            }
+            .graphicsLayer(
+                alpha = 10f - animateFloatAsState(if (dismissRight) 1f else 0f).value,
+//                rotationZ = animateFloatAsState(offset / 50).value
+            )
             .width(405.dp)
             .padding(vertical = 8.dp, horizontal = 8.dp)
             .clickable(onClick = {

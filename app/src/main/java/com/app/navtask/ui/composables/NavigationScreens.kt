@@ -11,15 +11,16 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.app.navtask.ui.viewmodel.FbViewModel
-import com.app.navtask.nav.NavItem
 import com.app.navtask.auth.LoginScreen
-import com.app.navtask.ui.composables.tabs.MainAppScreen
 import com.app.navtask.auth.RegisterScreen
 import com.app.navtask.auth.SuccessScreen
 import com.app.navtask.main.NotificationMessage
+import com.app.navtask.nav.NavItem
 import com.app.navtask.ui.composables.tabs.AddTaskScreen
+import com.app.navtask.ui.composables.tabs.MainAppScreen
 import com.app.navtask.ui.composables.tabs.MapScreen
+import com.app.navtask.ui.composables.tabs.TaskDetailsScreen
+import com.app.navtask.ui.viewmodel.FbViewModel
 import com.app.navtask.ui.viewmodel.TaskViewModel
 import com.app.navtask.ui.viewmodel.UserViewModel
 
@@ -32,6 +33,7 @@ import com.app.navtask.ui.viewmodel.UserViewModel
 @Composable
 fun NavigationScreens(
     navController: NavHostController,
+    bottomNavController: NavHostController,
     userVm: UserViewModel,
     taskVm: TaskViewModel
 ) {
@@ -72,15 +74,25 @@ fun NavigationScreens(
             }
         ) }
         composable(NavItem.Map.path + "/{taskId}") { backStackEntry ->
-            MapScreen(taskVm, backStackEntry.arguments?.getString("taskId"))
+            MapScreen(taskVm, backStackEntry.arguments?.getString("taskId"), navController)
+        }
+        composable(NavItem.TaskDetails.path + "/{taskId}") { backStackEntry ->
+            TaskDetailsScreen(taskVm,
+                backStackEntry.arguments?.getString("taskId"),
+                navController,
+                onMapButtonClicked = { taskId ->
+                    navController.navigate(NavItem.Map.path + "/$taskId")
+                }
+            )
         }
         composable(NavItem.AddTask.path) { isFromAddTask = true
             AddTaskScreen(taskVm, onAddButtonClicked = {
                 navController.navigate(NavItem.MainAppScreen.path)
-            }
+            },
+            navController
         ) }
         composable(NavItem.MainAppScreen.path) {
-            MainAppScreen(navController,vm, userVm, taskVm, isFromAddTask)
+            MainAppScreen(navController, bottomNavController, vm, userVm, taskVm, isFromAddTask)
         }
     }
 }

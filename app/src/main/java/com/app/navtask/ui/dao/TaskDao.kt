@@ -11,7 +11,7 @@ interface TaskDao {
     @Upsert
     suspend fun upsert(task: Task)
 
-    @Query("SELECT * FROM tasks")
+    @Query("SELECT * FROM tasks ORDER BY date ASC, priority DESC")
     suspend fun getAllTasks(): List<Task>
 
     @Query("SELECT * FROM tasks WHERE id = :id LIMIT 1")

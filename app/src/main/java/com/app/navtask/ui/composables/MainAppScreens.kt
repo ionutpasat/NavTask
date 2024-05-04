@@ -33,7 +33,7 @@ fun MainAppScreens(bottomNavController : NavHostController,
         composable(NavItem.List.path) { ListScreen(
             taskVm,
             onMapButtonClicked = { taskId ->
-                navController.navigate(NavItem.Map.path + "/$taskId")
+                navController.navigate(NavItem.TaskDetails.path + "/$taskId")
             }
         ) }
         composable(NavItem.Profile.path) { ProfileScreen(

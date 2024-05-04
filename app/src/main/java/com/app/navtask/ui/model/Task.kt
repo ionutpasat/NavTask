@@ -11,5 +11,7 @@ data class Task(
     val description : String,
     val priority : Int,
     val location : String,
+    val latitude : Double,
+    val longitude : Double,
     val date : String
 )

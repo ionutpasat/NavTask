@@ -62,8 +62,9 @@ class MainActivity : ComponentActivity() {
         setContent {
             NavTaskTheme {
                 val navController = rememberNavController()
+                val bottomBarController = rememberNavController()
                 Surface(modifier = Modifier.fillMaxSize()) {
-                    NavTaskApp(navController = navController, userVm, taskVm)
+                    NavTaskApp(navController, bottomBarController, userVm, taskVm)
                 }
             }
         }

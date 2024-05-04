@@ -46,6 +46,10 @@ sealed class NavItem {
         Item(
             path = NavPath.ADDTASK.toString(), title = NavTitle.ADDTASK, icon = Icons.Default.Task)
 
+    object TaskDetails :
+        Item(
+            path = NavPath.TASKDETAILS.toString(), title = NavTitle.TASKDETAILS, icon = Icons.Default.Task)
+
     object MainAppScreen :
         Item(
             path = NavPath.MAINAPP.toString(), title = NavTitle.MAINAPP, icon = Icons.Default.Domain)
