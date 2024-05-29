@@ -44,7 +44,6 @@ import com.app.navtask.ui.viewmodel.UserViewModel
 fun LoginScreen(onRegisterButtonClicked: () -> Unit = {},
                 onMainAppChange: () -> Unit = {},
                 vm: FbViewModel,
-                userVm: UserViewModel
 ) {
 
     if (vm.getSignedInUser() != null) {

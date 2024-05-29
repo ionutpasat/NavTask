@@ -21,12 +21,11 @@ import com.app.navtask.ui.viewmodel.UserViewModel
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun MainAppScreen(navController : NavHostController,
-                  bottomNavController : NavHostController,
                   vm : FbViewModel, userVm: UserViewModel,
                   taskVm : TaskViewModel,
                   isFromAddTask : Boolean = false
 ) {
-
+    val bottomNavController = rememberNavController()
     Scaffold(bottomBar = {
         BottomAppBar { BottomNavigationBar(bottomNavController, isFromAddTask) }
     }) { MainAppScreens(bottomNavController, navController, vm, userVm, taskVm) }

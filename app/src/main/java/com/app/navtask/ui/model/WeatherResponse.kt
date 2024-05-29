@@ -1,7 +1,5 @@
 package com.app.navtask.ui.model
 
-import androidx.compose.runtime.MutableState
-
 data class WeatherResponse(
     val daily: Daily
 )

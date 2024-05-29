@@ -1,5 +1,6 @@
 package com.app.navtask.ui.composables
 
+import android.location.Location
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
@@ -33,9 +34,9 @@ import com.app.navtask.ui.viewmodel.UserViewModel
 @Composable
 fun NavigationScreens(
     navController: NavHostController,
-    bottomNavController: NavHostController,
     userVm: UserViewModel,
-    taskVm: TaskViewModel
+    taskVm: TaskViewModel,
+    location: Location?
 ) {
     val vm = hiltViewModel<FbViewModel>()
     var isFromAddTask : Boolean by remember { mutableStateOf(false) }
@@ -50,8 +51,7 @@ fun NavigationScreens(
             onMainAppChange = {
                 navController.navigate(NavItem.MainAppScreen.path)
             },
-            vm = vm,
-            userVm = userVm
+            vm = vm
         ) }
         composable(NavItem.Register.path) { RegisterScreen(
             onLoginButtonClicked = {
@@ -74,7 +74,7 @@ fun NavigationScreens(
             }
         ) }
         composable(NavItem.Map.path + "/{taskId}") { backStackEntry ->
-            MapScreen(taskVm, backStackEntry.arguments?.getString("taskId"), navController)
+            MapScreen(taskVm, backStackEntry.arguments?.getString("taskId"), navController, location)
         }
         composable(NavItem.TaskDetails.path + "/{taskId}") { backStackEntry ->
             TaskDetailsScreen(taskVm,
@@ -92,7 +92,7 @@ fun NavigationScreens(
             navController
         ) }
         composable(NavItem.MainAppScreen.path) {
-            MainAppScreen(navController, bottomNavController, vm, userVm, taskVm, isFromAddTask)
+            MainAppScreen(navController, vm, userVm, taskVm, isFromAddTask)
         }
     }
 }

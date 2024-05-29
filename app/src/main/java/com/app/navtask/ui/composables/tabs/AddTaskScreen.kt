@@ -1,8 +1,14 @@
 package com.app.navtask.ui.composables.tabs
 
+import android.app.AlarmManager
+import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
 import android.location.Address
 import android.location.Geocoder
+import android.os.Build
+import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.scrollable
@@ -20,6 +26,7 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DatePickerState
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -28,6 +35,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TimePickerState
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -45,6 +53,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.app.navtask.ui.components.ReminderReceiver
 import com.app.navtask.ui.model.Task
 import com.app.navtask.ui.viewmodel.TaskViewModel
 import com.google.accompanist.insets.navigationBarsWithImePadding
@@ -56,6 +65,7 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 
+@RequiresApi(Build.VERSION_CODES.M)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddTaskScreen(
@@ -263,6 +273,7 @@ fun AddTaskScreen(
                 val task = Task(0, title, description, priority.toInt(),
                     fullLocation, coordinates.latitude, coordinates.longitude, date)
                 taskVm.addTask(task)
+                scheduleNotification(context, datePickerState, title)
                 onAddButtonClicked()
             }
         ) {
@@ -320,4 +331,44 @@ suspend fun fetchCoordinatesFromAddress(context: Context, address: String, maxRe
             null // Error occurred
         }
     }
+}
+
+@RequiresApi(Build.VERSION_CODES.M)
+@OptIn(ExperimentalMaterial3Api::class)
+fun scheduleNotification(
+    context: Context,
+    datePickerState: DatePickerState,
+    title: String
+) {
+    val intent = Intent(context.applicationContext, ReminderReceiver::class.java)
+    intent.putExtra("title", title)
+    val pendingIntent = PendingIntent.getBroadcast(
+        context.applicationContext,
+        1,
+        intent,
+        PendingIntent.FLAG_MUTABLE
+    )
+
+    val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+    val selectedDate = Calendar.getInstance().apply {
+        timeInMillis = if (datePickerState.selectedDateMillis != null)
+            datePickerState.selectedDateMillis!!
+        else
+            System.currentTimeMillis()
+    }
+
+    val year = selectedDate.get(Calendar.YEAR)
+    val month = selectedDate.get(Calendar.MONTH)
+    val day = selectedDate.get(Calendar.DAY_OF_MONTH)
+
+    val calendar = Calendar.getInstance()
+    calendar.set(year, month, day, 1, 34)
+
+    alarmManager.setExactAndAllowWhileIdle(
+        AlarmManager.RTC_WAKEUP,
+        calendar.timeInMillis,
+        pendingIntent
+    )
+
+    Toast.makeText(context, "Reminder set!!", Toast.LENGTH_SHORT).show()
 }

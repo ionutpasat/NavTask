@@ -1,30 +1,57 @@
 package com.app.navtask.ui.composables.tabs
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.Button
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.app.navtask.R
+import com.app.navtask.ui.components.NotificationHandler
 import com.app.navtask.ui.theme.md_theme_light_error
 import com.app.navtask.ui.theme.typography
-import com.app.navtask.R
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
 
 /**
  * Composable function that represents the home screen of the application.
  */
+//@RequiresApi(Build.VERSION_CODES.TIRAMISU)
+//@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun HomeScreen(
     onAddTaskButtonClicked : () -> Unit
 ) {
+//    val context = LocalContext.current
+//    val postNotificationPermission = rememberPermissionState(permission = android.Manifest.permission.POST_NOTIFICATIONS)
+//    val notificationHandler = NotificationHandler(context)
+//
+//    LaunchedEffect(key1 = true) {
+//        if (!postNotificationPermission.status.isGranted) {
+//            postNotificationPermission.launchPermissionRequest()
+//        }
+//    }
+//
+//    Column {
+//        Button(onClick = {
+//            notificationHandler.sendReminderNotification("Simple notification")
+//        }) { Text(text = "Simple notification") }
+//    }
+
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Text(
             text = stringResource(id = R.string.home),
