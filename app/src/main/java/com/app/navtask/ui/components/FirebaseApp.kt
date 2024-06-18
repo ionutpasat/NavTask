@@ -13,10 +13,7 @@ class FirebaseApp: Application() {
     override fun onCreate() {
         super.onCreate()
 
-        // Initialize Notification Channel
         createNotificationChannel()
-
-        // Initialize Firebase (Handled by Hilt with @HiltAndroidApp)
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -28,7 +25,6 @@ class FirebaseApp: Application() {
         )
         val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
 
-        // Setting up the channel
         notificationManager.createNotificationChannel(notificationChannel)
     }
 }

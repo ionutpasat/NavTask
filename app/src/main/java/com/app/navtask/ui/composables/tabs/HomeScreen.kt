@@ -36,21 +36,6 @@ import com.google.accompanist.permissions.rememberPermissionState
 fun HomeScreen(
     onAddTaskButtonClicked : () -> Unit
 ) {
-//    val context = LocalContext.current
-//    val postNotificationPermission = rememberPermissionState(permission = android.Manifest.permission.POST_NOTIFICATIONS)
-//    val notificationHandler = NotificationHandler(context)
-//
-//    LaunchedEffect(key1 = true) {
-//        if (!postNotificationPermission.status.isGranted) {
-//            postNotificationPermission.launchPermissionRequest()
-//        }
-//    }
-//
-//    Column {
-//        Button(onClick = {
-//            notificationHandler.sendReminderNotification("Simple notification")
-//        }) { Text(text = "Simple notification") }
-//    }
 
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Text(

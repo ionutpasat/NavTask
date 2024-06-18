@@ -36,7 +36,8 @@ fun NavigationScreens(
     navController: NavHostController,
     userVm: UserViewModel,
     taskVm: TaskViewModel,
-    location: Location?
+    location: Location?,
+    onThemeButtonClicked: () -> Unit = {}
 ) {
     val vm = hiltViewModel<FbViewModel>()
     var isFromAddTask : Boolean by remember { mutableStateOf(false) }
@@ -92,7 +93,7 @@ fun NavigationScreens(
             navController
         ) }
         composable(NavItem.MainAppScreen.path) {
-            MainAppScreen(navController, vm, userVm, taskVm, isFromAddTask)
+            MainAppScreen(navController, vm, userVm, taskVm, isFromAddTask, onThemeButtonClicked)
         }
     }
 }

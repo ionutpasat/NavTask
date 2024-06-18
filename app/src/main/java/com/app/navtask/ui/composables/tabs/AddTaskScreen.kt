@@ -362,7 +362,7 @@ fun scheduleNotification(
     val day = selectedDate.get(Calendar.DAY_OF_MONTH)
 
     val calendar = Calendar.getInstance()
-    calendar.set(year, month, day, 1, 34)
+    calendar.set(year, month, day, 0, 53)
 
     alarmManager.setExactAndAllowWhileIdle(
         AlarmManager.RTC_WAKEUP,
@@ -370,5 +370,5 @@ fun scheduleNotification(
         pendingIntent
     )
 
-    Toast.makeText(context, "Reminder set!!", Toast.LENGTH_SHORT).show()
+    Toast.makeText(context, "Reminder set!", Toast.LENGTH_SHORT).show()
 }

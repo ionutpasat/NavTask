@@ -26,4 +26,8 @@ class UserViewModel(
     suspend fun getAllUsers(): List<User> {
         return dao.getAllUsers()
     }
+
+    suspend fun updateThemePreference(email: String, themePreference: Boolean) {
+        dao.updateThemePreference(email, themePreference)
+    }
 }

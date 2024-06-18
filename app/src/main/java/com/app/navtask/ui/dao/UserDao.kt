@@ -16,5 +16,8 @@ interface UserDao {
     @Query("SELECT * FROM users")
     suspend fun getAllUsers(): List<User>
 
+    @Query("UPDATE users SET themePreference = :themePreference WHERE email = :email")
+    suspend fun updateThemePreference(email: String, themePreference: Boolean)
+
 
 }

@@ -21,10 +21,11 @@ fun NavTaskApp(
     navController: NavHostController,
     userVm: UserViewModel, taskVm:
                TaskViewModel,
-    location: Location?
+    location: Location?,
+    onThemeButtonClicked: () -> Unit = {}
 ) {
 //    Scaffold(bottomBar = {
 //        BottomAppBar { BottomNavigationBar(navController = navController) }
 //    }) { NavigationScreens(navController = navController) }
-    NavigationScreens(navController, userVm, taskVm, location)
+    NavigationScreens(navController, userVm, taskVm, location, onThemeButtonClicked)
 }

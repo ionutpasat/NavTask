@@ -10,5 +10,6 @@ data class User(
     val id: Int = 0,
     val email: String = "",
     var name: String = "",
-    var profileImageUri: String = ""
+    var profileImageUri: String = "",
+    var themePreference: Boolean = false
 )

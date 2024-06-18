@@ -23,10 +23,11 @@ import com.app.navtask.ui.viewmodel.UserViewModel
 fun MainAppScreen(navController : NavHostController,
                   vm : FbViewModel, userVm: UserViewModel,
                   taskVm : TaskViewModel,
-                  isFromAddTask : Boolean = false
+                  isFromAddTask : Boolean = false,
+                  onThemeButtonClicked: () -> Unit = {}
 ) {
     val bottomNavController = rememberNavController()
     Scaffold(bottomBar = {
         BottomAppBar { BottomNavigationBar(bottomNavController, isFromAddTask) }
-    }) { MainAppScreens(bottomNavController, navController, vm, userVm, taskVm) }
+    }) { MainAppScreens(bottomNavController, navController, vm, userVm, taskVm, onThemeButtonClicked) }
 }

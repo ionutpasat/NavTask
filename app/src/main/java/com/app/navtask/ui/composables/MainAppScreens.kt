@@ -22,6 +22,7 @@ fun MainAppScreens(bottomNavController : NavHostController,
                    vm : FbViewModel,
                    userVm: UserViewModel,
                    taskVm : TaskViewModel,
+                   onThemeButtonClicked: () -> Unit = {}
 ) {
     NavHost(bottomNavController, startDestination = NavItem.Home.path) {
         composable(NavItem.Home.path) { HomeScreen(
@@ -42,7 +43,8 @@ fun MainAppScreens(bottomNavController : NavHostController,
             onLogoutButtonClicked = {
                 vm.auth.signOut()
                 navController.navigate(NavItem.Login.path)
-            }
+            },
+            onThemeButtonClicked
         ) }
     }
 }

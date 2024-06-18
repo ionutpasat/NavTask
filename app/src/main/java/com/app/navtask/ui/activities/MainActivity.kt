@@ -25,9 +25,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.core.content.ContextCompat
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.preferencesDataStore
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
 import androidx.room.Room
 import com.app.navtask.ui.composables.NavTaskApp
@@ -38,6 +44,9 @@ import com.app.navtask.ui.viewmodel.TaskViewModel
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.first
+
+private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -49,6 +58,9 @@ class MainActivity : ComponentActivity() {
      */
 
     private lateinit var fusedLocationClient: FusedLocationProviderClient
+    object PreferenceKeys {
+        val IS_DARK_THEME_ENABLED = booleanPreferencesKey("is_dark_theme_enabled")
+    }
 
     private val db by lazy {
         Room.databaseBuilder(
@@ -78,6 +90,7 @@ class MainActivity : ComponentActivity() {
         }
     )
 
+
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -88,6 +101,20 @@ class MainActivity : ComponentActivity() {
 
             var location by remember { mutableStateOf<Location?>(null) }
             val permissionState = remember { mutableStateOf(false) }
+            var darkTheme by remember { mutableStateOf(false) }
+            var darkThemeChanged by remember { mutableStateOf(false) }
+
+            LaunchedEffect(darkTheme) {
+                darkTheme = getFeatureEnabled(context)
+            }
+
+            if(darkThemeChanged) {
+                darkThemeChanged = false
+                darkTheme = !darkTheme
+                LaunchedEffect(Unit) {
+                    saveFeatureEnabled(darkTheme, context)
+                }
+            }
 
             val locationPermissionLauncher = rememberLauncherForActivityResult(
                 contract = ActivityResultContracts.RequestPermission()
@@ -116,10 +143,12 @@ class MainActivity : ComponentActivity() {
                     }
                 }
             }
-            NavTaskTheme {
+            NavTaskTheme(darkTheme = darkTheme) {
                 val navController = rememberNavController()
                 Surface(modifier = Modifier.fillMaxSize()) {
-                    NavTaskApp(navController, userVm, taskVm, location)
+                    NavTaskApp(navController, userVm, taskVm, location, onThemeButtonClicked = {
+                        darkThemeChanged = true
+                    })
                 }
             }
         }
@@ -133,4 +162,19 @@ class MainActivity : ComponentActivity() {
                 callback(location)
             }
     }
+
+    // Write the boolean value
+    private suspend fun saveFeatureEnabled(enabled: Boolean, context: Context) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferenceKeys.IS_DARK_THEME_ENABLED] = enabled
+        }
+    }
+
+    // Read the boolean value
+    private suspend fun getFeatureEnabled(context: Context): Boolean {
+        val preferences = context.dataStore.data.first()
+        return preferences[PreferenceKeys.IS_DARK_THEME_ENABLED] ?: false
+    }
 }
+
+

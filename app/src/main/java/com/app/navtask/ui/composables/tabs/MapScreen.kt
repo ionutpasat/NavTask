@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -29,11 +28,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import com.app.navtask.R
 import com.app.navtask.ui.dao.DirectionsResponse
 import com.app.navtask.ui.dao.LocationService
 import com.app.navtask.ui.model.Task
 import com.app.navtask.ui.viewmodel.TaskViewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
@@ -47,10 +48,7 @@ import com.google.maps.android.compose.rememberCameraPositionState
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import java.io.FileInputStream
-import java.util.Properties
 
-@OptIn(ExperimentalPermissionsApi::class)
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
 fun MapScreen(
@@ -98,7 +96,7 @@ fun MapScreen(
             val call = LocationService.api.getDirections(
                 origin = origin,
                 destination = destination,
-                apiKey = "MAPS_API_KEY"
+                apiKey = "AIzaSyB5oh1wQfaTc3SpqRGtefDL84ySr6ta9vk"
             )
 
             call.enqueue(object : Callback<DirectionsResponse?> {
@@ -117,6 +115,7 @@ fun MapScreen(
                     Log.e("MapScreen", "Failed to fetch directions", t)
                 }
             })
+            cameraPositionState.position = CameraPosition.fromLatLngZoom(currentLocation!!, 13f)
         }
     }
 
@@ -124,7 +123,7 @@ fun MapScreen(
         GoogleMap(
             modifier = Modifier.matchParentSize(),
             cameraPositionState = cameraPositionState,
-            properties = properties,
+            properties = properties.copy(isMyLocationEnabled = true),
             uiSettings = uiSettings
         ) {
             currentLocation?.let {
@@ -132,7 +131,7 @@ fun MapScreen(
                     state = MarkerState(position = it),
                     title = "Current Location",
                     snippet = "You are here",
-//                    icon = BitmapDescriptorFactory.fromResource(R.drawable.ic_current_location)
+                    icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)
                 )
             }
             Marker(

@@ -2,6 +2,7 @@ package com.app.navtask.auth
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -16,6 +17,9 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -41,89 +45,94 @@ import com.app.navtask.R
 import com.app.navtask.ui.viewmodel.UserViewModel
 
 @Composable
-fun LoginScreen(onRegisterButtonClicked: () -> Unit = {},
-                onMainAppChange: () -> Unit = {},
-                vm: FbViewModel,
+fun LoginScreen(
+    onRegisterButtonClicked: () -> Unit = {},
+    onMainAppChange: () -> Unit = {},
+    vm: FbViewModel,
 ) {
-
     if (vm.getSignedInUser() != null) {
         onMainAppChange()
     } else {
-        val emty by remember { mutableStateOf("") }
         var email by remember { mutableStateOf("") }
         var password by remember { mutableStateOf("") }
         var passwordVisibility by remember { mutableStateOf(false) }
         var errorE by remember { mutableStateOf(false) }
         var errorP by remember { mutableStateOf(false) }
 
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = MaterialTheme.colorScheme.background
         ) {
-            Text(
-                text = "Login",
-                style = TextStyle(
-                    fontSize = 40.sp,
-                    fontFamily = FontFamily.Cursive,
-                    color = Color(0xFF001F26)
-                )
-            )
-            Spacer(modifier = Modifier.height(20.dp))
-            if (errorE) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(16.dp)
+            ) {
                 Text(
-                    text = "Enter email",
-                    color = Color.Red
-                )
-            }
-            TextField(
-                value = email,
-                onValueChange = { email = it },
-                label = { Text("Email") },
-                leadingIcon = {
-                    Icon(
-                        painter = painterResource(id = R.drawable.baseline_person_24),
-                        contentDescription = null
+                    text = "Login",
+                    style = MaterialTheme.typography.headlineLarge.copy(
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Bold
                     )
-                },
-                trailingIcon = {
-                    if (email.isNotEmpty()) {
-                        IconButton(onClick = { email = emty }) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.baseline_close_24),
-                                contentDescription = null
-                            )
+                )
+                Spacer(modifier = Modifier.height(20.dp))
+                if (errorE) {
+                    Text(
+                        text = "Enter email",
+                        color = Color.Red,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+                OutlinedTextField(
+                    value = email,
+                    onValueChange = { email = it },
+                    label = { Text("Email") },
+                    leadingIcon = {
+                        Icon(
+                            painter = painterResource(id = R.drawable.baseline_person_24),
+                            contentDescription = null
+                        )
+                    },
+                    trailingIcon = {
+                        if (email.isNotEmpty()) {
+                            IconButton(onClick = { email = "" }) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.baseline_close_24),
+                                    contentDescription = null
+                                )
+                            }
                         }
-                    }
-                },
-                keyboardOptions = KeyboardOptions(
-                    imeAction = ImeAction.Next
-                ),
-                singleLine = true
-            )
-            Spacer(modifier = Modifier.height(30.dp))
-            if (errorP) {
-                Text(
-                    text = "Enter password",
-                    color = Color.Red
+                    },
+                    keyboardOptions = KeyboardOptions(
+                        imeAction = ImeAction.Next
+                    ),
+                    singleLine = true,
+                    isError = errorE
                 )
-            }
-            TextField(
-                value = password,
-                onValueChange = {
-                    password = it
-                },
-                label = { Text("Password") },
-                leadingIcon = {
-                    Icon(
-                        painter = painterResource(id = R.drawable.baseline_lock_24),
-                        contentDescription = null
+                Spacer(modifier = Modifier.height(30.dp))
+                if (errorP) {
+                    Text(
+                        text = "Enter password",
+                        color = Color.Red,
+                        style = MaterialTheme.typography.bodyMedium
                     )
-                },
-                trailingIcon = {
-                    if (password.isNotEmpty()) {
+                }
+                OutlinedTextField(
+                    value = password,
+                    onValueChange = {
+                        password = it
+                    },
+                    label = { Text("Password") },
+                    leadingIcon = {
+                        Icon(
+                            painter = painterResource(id = R.drawable.baseline_lock_24),
+                            contentDescription = null
+                        )
+                    },
+                    trailingIcon = {
                         val visibilityIcon = if (passwordVisibility) {
                             painterResource(id = R.drawable.baseline_visibility_24)
                         } else {
@@ -132,60 +141,60 @@ fun LoginScreen(onRegisterButtonClicked: () -> Unit = {},
                         IconButton(onClick = { passwordVisibility = !passwordVisibility }) {
                             Icon(painter = visibilityIcon, contentDescription = null)
                         }
-                    }
-                },
-                visualTransformation = if (passwordVisibility) {
-                    VisualTransformation.None
-                } else {
-                    PasswordVisualTransformation()
-                },
-                keyboardOptions = KeyboardOptions(
-                    imeAction = ImeAction.Next
-                ),
-                singleLine = true
-            )
-            Spacer(modifier = Modifier.height(50.dp))
-            Button(onClick = {
-                if (email.isNotEmpty()) {
-                    errorE = false
-                    if (password.isNotEmpty()) {
-                        errorP = false
-                        vm.login(email, password)
+                    },
+                    visualTransformation = if (passwordVisibility) {
+                        VisualTransformation.None
                     } else {
-                        errorP = true
-                    }
-                } else {
-                    errorE = true
-                }
-            })
-            {
-                Text(text = "Login")
-            }
-            Spacer(modifier = Modifier.height(10.dp))
-            Row(
-                modifier = Modifier
-                    .padding(top = 10.dp)
-                    .clickable(onClick = onRegisterButtonClicked)
-            ) {
-                Text(text = "Don't have an account? ")
-                Text(
-                    text = "Sign up here",
-                    fontWeight = FontWeight.Bold,
-                    textDecoration = TextDecoration.Underline,
+                        PasswordVisualTransformation()
+                    },
+                    keyboardOptions = KeyboardOptions(
+                        imeAction = ImeAction.Done
+                    ),
+                    singleLine = true,
+                    isError = errorP
                 )
+                Spacer(modifier = Modifier.height(50.dp))
+                Button(onClick = {
+                    if (email.isNotEmpty()) {
+                        errorE = false
+                        if (password.isNotEmpty()) {
+                            errorP = false
+                            vm.login(email, password)
+                        } else {
+                            errorP = true
+                        }
+                    } else {
+                        errorE = true
+                    }
+                }) {
+                    Text(text = "Login")
+                }
+                Spacer(modifier = Modifier.height(10.dp))
+                Row(
+                    modifier = Modifier
+                        .padding(top = 10.dp)
+                        .clickable(onClick = onRegisterButtonClicked)
+                ) {
+                    Text(text = "Don't have an account? ")
+                    Text(
+                        text = "Sign up here",
+                        fontWeight = FontWeight.Bold,
+                        textDecoration = TextDecoration.Underline,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+                if (vm.signedIn.value) {
+                    onMainAppChange()
+                }
+                vm.signedIn.value = false
             }
-            if (vm.signedIn.value) {
-                onMainAppChange()
-            }
-            vm.signedIn.value = false
-        }
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-            modifier = Modifier.fillMaxSize()
-        ) {
             if (vm.inProgress.value) {
-                CircularProgressIndicator()
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    CircularProgressIndicator()
+                }
             }
         }
     }

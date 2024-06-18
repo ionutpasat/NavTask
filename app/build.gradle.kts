@@ -117,7 +117,6 @@ dependencies {
 
     implementation("androidx.navigation:navigation-fragment:2.7.7")
     implementation("androidx.navigation:navigation-ui:2.7.7")
-
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation("com.google.accompanist:accompanist-insets:0.20.0")
@@ -130,4 +129,6 @@ dependencies {
     testImplementation("org.mockito.kotlin:mockito-kotlin:4.1.0")
     testImplementation("com.squareup.okhttp3:mockwebserver:4.9.1")
     testImplementation("androidx.arch.core:core-testing:2.1.0")
+
+    implementation("androidx.datastore:datastore-preferences:1.0.0")
 }

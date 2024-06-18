@@ -3,6 +3,7 @@ package com.app.navtask.ui.composables.tabs
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
+import android.widget.Switch
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -12,17 +13,25 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.DarkMode
 import androidx.compose.material.icons.outlined.Logout
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -49,7 +58,8 @@ import com.app.navtask.ui.viewmodel.UserViewModel
 fun ProfileScreen(
     vm: FbViewModel,
     userVm: UserViewModel,
-    onLogoutButtonClicked: () -> Unit = {}
+    onLogoutButtonClicked: () -> Unit = {},
+    onThemeButtonClicked: () -> Unit = {}
 ) {
     val email = vm.getSignedInUser()?.email ?: "default@email.com"
     var userState by remember { mutableStateOf(User()) }
@@ -76,88 +86,106 @@ fun ProfileScreen(
         }
     )
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.Top,
-        horizontalAlignment = Alignment.End
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.background
     ) {
-        Box(
-            modifier = Modifier
-                .padding(8.dp)
-                .size(24.dp)
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.Top,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Icon(
-                imageVector = Icons.Outlined.Logout,
-                contentDescription = "Logout",
-                modifier = Modifier.clickable { onLogoutButtonClicked() }
-            )
-        }
-    }
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.Top,
-        horizontalAlignment = Alignment.Start
-    ) {
-        Box(
-            modifier = Modifier.size(120.dp)
-        ) {
-            if (imageUri != null && imageUri.toString().isNotEmpty()) {
-                AsyncImage(
-                    model = imageUri,
-                    contentDescription = null,
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Box(
                     modifier = Modifier
-                        .size(120.dp)
-                        .clip(CircleShape)
-                        .clickable { pickImageLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))},
-                    contentScale = ContentScale.Crop
-                )
-            } else {
-                Image(
-                    painter = painterResource(id = R.drawable.profile_image_placeholder),
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
+                        .padding(8.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.DarkMode,
+                        contentDescription = "Theme",
+                        modifier = Modifier
+                            .size(24.dp)
+                            .clickable { onThemeButtonClicked() },
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+                Box(
                     modifier = Modifier
-                        .size(120.dp)
-                        .clip(CircleShape)
-                        .clickable { pickImageLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))},
-                )
+                        .padding(8.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Logout,
+                        contentDescription = "Logout",
+                        modifier = Modifier
+                            .size(24.dp)
+                            .clickable { onLogoutButtonClicked() },
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
             }
-        }
 
-        Spacer(modifier = Modifier.height(16.dp))
-        Box(
-            modifier = Modifier
-                .wrapContentSize()
-                .padding(8.dp)
-        ) {
-            Text(
-                text = "User Profile",
-                color = Color.Black,
-                style = MaterialTheme.typography.headlineMedium
-            )
-        }
-        Spacer(modifier = Modifier.height(16.dp))
-        Box(
-            modifier = Modifier
-                .wrapContentSize()
-                .padding(8.dp)
-        ) {
-            Column {
-                Text(
-                    text = "Name: ${userState.name}",
-                    color = Color.Black,
-                    style = MaterialTheme.typography.bodyLarge
-                )
-                Spacer(modifier = Modifier.height(20.dp))
-                Text(
-                    text = "Email: ${vm.getSignedInUser()?.email}",
-                    color = Color.Black,
-                    style = MaterialTheme.typography.bodyLarge
-                )
+            Card(
+                modifier = Modifier.padding(16.dp),
+                shape = RoundedCornerShape(16.dp),
+                elevation = CardDefaults.elevatedCardElevation(8.dp)
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    if (imageUri != null && imageUri.toString().isNotEmpty()) {
+                        AsyncImage(
+                            model = imageUri,
+                            contentDescription = null,
+                            modifier = Modifier
+                                .size(120.dp)
+                                .clip(CircleShape)
+                                .clickable { pickImageLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
+                            contentScale = ContentScale.Crop
+                        )
+                    } else {
+                        Image(
+                            painter = painterResource(id = R.drawable.profile_image_placeholder),
+                            contentDescription = null,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .size(120.dp)
+                                .clip(CircleShape)
+                                .clickable { pickImageLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Text(
+                        text = "User Profile",
+                        color = MaterialTheme.colorScheme.onBackground,
+                        style = MaterialTheme.typography.headlineMedium
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Divider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f))
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Text(
+                        text = "Name: ${userState.name}",
+                        color = MaterialTheme.colorScheme.onBackground,
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Text(
+                        text = "Email: $email",
+                        color = MaterialTheme.colorScheme.onBackground,
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
             }
         }
     }
