@@ -96,7 +96,7 @@ fun MapScreen(
             val call = LocationService.api.getDirections(
                 origin = origin,
                 destination = destination,
-                apiKey = "AIzaSyB5oh1wQfaTc3SpqRGtefDL84ySr6ta9vk"
+                apiKey = "AIzaSyC7Y4f2-Ju9OpUaj1YWOXlp5infEENFfRY"
             )
 
             call.enqueue(object : Callback<DirectionsResponse?> {

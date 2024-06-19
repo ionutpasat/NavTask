@@ -43,6 +43,7 @@ import com.app.navtask.ui.viewmodel.TaskViewModel
 fun TaskDetailsScreen(
     taskVm: TaskViewModel,
     taskId: String? = null,
+    temp: String? = null,
     navController: NavHostController,
     onMapButtonClicked: (taskId: String) -> Unit
 ) {
@@ -109,9 +110,20 @@ fun TaskDetailsScreen(
 
                         SectionTitle(title = "Priority")
                         Text(
-                            text = it.priority.toString(),
+                            text = when (it.priority) {
+                                1 -> "Low"
+                                2 -> "Medium"
+                                3 -> "High"
+                                else -> "Low"
+                            },
                             style = MaterialTheme.typography.bodyLarge,
-                            modifier = Modifier.padding(bottom = 16.dp)
+                            modifier = Modifier.padding(bottom = 16.dp),
+                            color = when (it.priority) {
+                                1 -> Color.Green
+                                2 -> Color.Yellow
+                                3 -> Color.Red
+                                else -> Color.Green
+                            }
                         )
                         Divider(color = Color.Gray, thickness = 1.dp)
 
@@ -123,9 +135,18 @@ fun TaskDetailsScreen(
                         )
                         Divider(color = Color.Gray, thickness = 1.dp)
 
+                        SectionTitle(title = "Weather Forecast")
+                        Text(
+                            text = temp ?: "Loading...",
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier.padding(bottom = 16.dp)
+                        )
+                        Divider(color = Color.Gray, thickness = 1.dp)
+
                         Button(
                             onClick = { onMapButtonClicked(taskId ?: "0") },
                             modifier = Modifier.padding(top = 16.dp)
+                                .align(Alignment.CenterHorizontally)
                         ) {
                             Text(text = "Go to Map")
                         }

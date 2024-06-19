@@ -52,7 +52,7 @@ class FbViewModel @Inject constructor(
     private fun handleException(exception: Exception? = null, customMessage: String? = ""){
         exception?.printStackTrace()
         val errorMsg = exception?.localizedMessage ?: ""
-        val message = if (customMessage.isNullOrEmpty()) errorMsg else "$customMessage: $errorMsg"
+        val message = if (customMessage.isNullOrEmpty()) errorMsg else "$customMessage $errorMsg"
         popupNotification.value = Event(message)
     }
 

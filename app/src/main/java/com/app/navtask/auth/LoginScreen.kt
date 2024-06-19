@@ -1,5 +1,9 @@
 package com.app.navtask.auth
 
+import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -7,8 +11,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -30,7 +37,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -43,6 +52,11 @@ import androidx.compose.ui.unit.sp
 import com.app.navtask.ui.viewmodel.FbViewModel
 import com.app.navtask.R
 import com.app.navtask.ui.viewmodel.UserViewModel
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.GoogleAuthProvider
 
 @Composable
 fun LoginScreen(
@@ -58,6 +72,29 @@ fun LoginScreen(
         var passwordVisibility by remember { mutableStateOf(false) }
         var errorE by remember { mutableStateOf(false) }
         var errorP by remember { mutableStateOf(false) }
+        val context = LocalContext.current
+        val token = "687268405223-0janjmk5qjs67cr6p794rvpcnbr8qafp.apps.googleusercontent.com"
+        val launcher = rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.StartActivityForResult(),
+        ) {
+            val task =
+                try {
+                    val account = GoogleSignIn.getSignedInAccountFromIntent(it.data)
+                        .getResult(ApiException::class.java)
+                    val credential = GoogleAuthProvider.getCredential(account.idToken!!, null)
+                    vm.auth.signInWithCredential(credential)
+                        .addOnCompleteListener { task ->
+                            if (task.isSuccessful) {
+                                vm.signedIn.value = true
+                            } else {
+                                Log.w("TAG", "GoogleSign in Failed", task.exception)
+                            }
+                        }
+                }
+                catch (e: ApiException) {
+                    Log.w("TAG", "GoogleSign in Failed", e)
+                }
+        }
 
         Surface(
             modifier = Modifier.fillMaxSize(),
@@ -154,20 +191,44 @@ fun LoginScreen(
                     isError = errorP
                 )
                 Spacer(modifier = Modifier.height(50.dp))
-                Button(onClick = {
-                    if (email.isNotEmpty()) {
-                        errorE = false
-                        if (password.isNotEmpty()) {
-                            errorP = false
-                            vm.login(email, password)
+                Row(
+                    modifier = Modifier.width(150.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Button(onClick = {
+                        if (email.isNotEmpty()) {
+                            errorE = false
+                            if (password.isNotEmpty()) {
+                                errorP = false
+                                vm.login(email, password)
+                            } else {
+                                errorP = true
+                            }
                         } else {
-                            errorP = true
+                            errorE = true
                         }
-                    } else {
-                        errorE = true
+                    }) {
+                        Text(text = "Login")
                     }
-                }) {
-                    Text(text = "Login")
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier.size(36.dp)
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.google_svg),
+                            contentDescription = "Google Sign In",
+                            modifier = Modifier
+                                .clickable(onClick = {
+                                    val gso = GoogleSignInOptions
+                                        .Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                                        .requestIdToken(token)
+                                        .requestEmail()
+                                        .build()
+                                    val googleSignInClient = GoogleSignIn.getClient(context, gso)
+                                    launcher.launch(googleSignInClient.signInIntent)
+                                })
+                        )
+                    }
                 }
                 Spacer(modifier = Modifier.height(10.dp))
                 Row(

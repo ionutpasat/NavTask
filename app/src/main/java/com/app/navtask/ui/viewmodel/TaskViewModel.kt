@@ -24,4 +24,10 @@ class TaskViewModel(
         suspend fun getTaskById(id: Int): Task? {
             return taskDao.getTaskById(id)
         }
+
+        fun deleteTaskById(id: Int) {
+            viewModelScope.launch(Dispatchers.Unconfined) {
+                taskDao.deleteTaskById(id)
+            }
+        }
 }
