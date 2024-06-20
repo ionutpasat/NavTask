@@ -30,4 +30,18 @@ class TaskViewModel(
                 taskDao.deleteTaskById(id)
             }
         }
+
+        suspend fun searchTasks(query: String): List<Task> {
+            return taskDao.searchTasks(query)
+        }
+
+        suspend fun getFirstTask(): Task? {
+            return taskDao.getFirstTask()
+        }
+
+        fun updateTask(id: Int, title: String, description: String, location: String, priority: Int, date: String) {
+            viewModelScope.launch(Dispatchers.Unconfined) {
+                taskDao.updateTask(id, title, description, location, priority, date)
+            }
+        }
 }

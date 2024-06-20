@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -38,11 +39,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.PaintingStyle
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
@@ -50,8 +53,11 @@ import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.app.navtask.R
 import com.app.navtask.ui.dao.WeatherService
 import com.app.navtask.ui.model.Task
@@ -86,11 +92,25 @@ fun ListScreen(
     }
 
     if (taskList.isEmpty()) {
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            contentAlignment = Alignment.Center
+        ) {
             Text(
-                text = "You have no tasks yet! Click the + button in the Home section to add one",
-                style = typography.titleLarge,
-                color = md_theme_light_error
+                text = "You have no tasks yet! \nClick the + button in the Home section to add one",
+                style = typography.titleLarge.copy(
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.DarkGray,
+                    shadow = Shadow(
+                        color = Color.Black.copy(alpha = 0.25f),
+                        offset = Offset(4f, 4f),
+                        blurRadius = 8f
+                    )
+                ),
+                textAlign = TextAlign.Center
             )
         }
     } else {
@@ -111,7 +131,8 @@ fun ListScreen(
                         3 -> Priority.HIGH
                         else -> Priority.LOW
                     },
-                    location = todo.location,
+                    latitude = todo.latitude.toString(),
+                    longitude = todo.longitude.toString(),
                     date = todo.date,
                     onTaskButtonClicked,
                     taskVm,
@@ -138,7 +159,8 @@ fun TodoItem(
     title: String,
     description: String,
     priority: Priority,
-    location: String,
+    latitude: String,
+    longitude: String,
     date: String,
     onButtonClicked: (taskId: String, temp: String) -> Unit,
     taskVm: TaskViewModel,
@@ -201,7 +223,7 @@ fun TodoItem(
     }
 
     LaunchedEffect(temp) {
-        val call = WeatherService.instance.getWeather(44.4375.toString(), 26.125.toString(),"temperature_2m_max", date, date)
+        val call = WeatherService.instance.getWeather(latitude, longitude,"temperature_2m_max", date, date)
         call.enqueue(object: Callback<WeatherResponse?> {
             override fun onResponse(call: Call<WeatherResponse?>, response: Response<WeatherResponse?>) {
                 try {

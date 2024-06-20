@@ -110,6 +110,7 @@ fun LoginScreen(
             ) {
                 Text(
                     text = "Login",
+                    fontFamily = FontFamily.Cursive,
                     style = MaterialTheme.typography.headlineLarge.copy(
                         color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.Bold

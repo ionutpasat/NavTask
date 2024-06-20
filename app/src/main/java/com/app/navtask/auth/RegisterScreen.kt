@@ -77,6 +77,7 @@ fun RegisterScreen(
         ) {
             Text(
                 text = "Create an account",
+                fontFamily = FontFamily.Cursive,
                 style = MaterialTheme.typography.headlineLarge.copy(
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Bold
