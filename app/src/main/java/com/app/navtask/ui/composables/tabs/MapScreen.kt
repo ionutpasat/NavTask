@@ -230,7 +230,7 @@ fun fetchDirections(
     val call = LocationService.api.getDirections(
         origin = "${origin.latitude},${origin.longitude}",
         destination = "${destination.latitude},${destination.longitude}",
-        apiKey = "AIzaSyCU0agCz5nU7BbeT7NIcez4LZcJrZ16NvE",
+        apiKey = "MAPS_API_KEY",
         mode = mode
     )
 
