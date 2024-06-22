@@ -6,6 +6,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -94,7 +95,7 @@ fun ListScreen(
     taskVm : TaskViewModel,
     userVm: UserViewModel,
     fbVm: FbViewModel,
-    onTaskButtonClicked: (taskId: String, temp: String) -> Unit
+    onTaskButtonClicked: (taskId: String, temp: String, precip: String) -> Unit
 ) {
     val coroutineScope = rememberCoroutineScope()
     var taskList by remember { mutableStateOf<List<Task>>(emptyList()) }
@@ -180,24 +181,25 @@ fun TodoItem(
     longitude: String,
     date: String,
     type: String,
-    onButtonClicked: (taskId: String, temp: String) -> Unit,
+    onButtonClicked: (taskId: String, temp: String, precip: String) -> Unit,
     taskVm: TaskViewModel,
     userVm: UserViewModel,
     fbVm: FbViewModel,
     onTaskCompleted: () -> Unit
 ) {
     var temp by remember { mutableStateOf("Loading...") }
+    var precip by remember { mutableStateOf("Loading...") }
     var offset by remember { mutableFloatStateOf(0f) }
     var dismissRight by remember { mutableStateOf(false) }
     var dismissLeft by remember { mutableStateOf(false) }
     var showMenu by remember { mutableStateOf(false) }
-    var selectedIcon by remember { mutableStateOf(Icons.Default.Work) }
     val email = fbVm.getSignedInUser()?.email ?: "default@email.com"
     val density = LocalDensity.current.density
     val context = LocalContext.current
     val swipeThreshold = 400f
     val sensitivityFactor = 3f
     val showCompletionDialog = remember { mutableStateOf(false) }
+    var taskType by remember { mutableStateOf(type) }
 
     LaunchedEffect(dismissRight) {
         if (dismissRight) {
@@ -257,12 +259,13 @@ fun TodoItem(
     }
 
     LaunchedEffect(temp) {
-        val call = WeatherService.instance.getWeather(latitude, longitude, "temperature_2m_max", date, date)
+        val call = WeatherService.instance.getWeather(latitude, longitude, "temperature_2m_max,precipitation_probability_max", date, date)
         call.enqueue(object : Callback<WeatherResponse?> {
             override fun onResponse(call: Call<WeatherResponse?>, response: Response<WeatherResponse?>) {
                 try {
                     if (response.isSuccessful) {
                         temp = response.body()?.daily?.temperature_2m_max?.get(0).toString()
+                        precip = response.body()?.daily?.precipitation_probability_max?.get(0).toString()
                     }
                 } catch (e: Exception) {
                     Log.e("Main", "Failed mate " + e.message.toString())
@@ -315,11 +318,13 @@ fun TodoItem(
                 .fillMaxWidth() // Ensure all cards have the same width
                 .padding(vertical = 8.dp, horizontal = 8.dp)
                 .clickable(onClick = {
-                    onButtonClicked(id, temp)
-                }),
-            colors = CardDefaults.cardColors(
-                containerColor = Color(0xFF743EA3),
-            ),
+                    onButtonClicked(id, temp, precip)
+                })
+                .border(
+                    width = 1.dp,
+                    color = Color.Gray,
+                    shape = RoundedCornerShape(10.dp)
+                ),
             elevation = CardDefaults.cardElevation(defaultElevation = 5.dp)
         ) {
             Column(modifier = Modifier.padding(16.dp))
@@ -337,7 +342,7 @@ fun TodoItem(
                     Box(modifier = Modifier.align(Alignment.CenterVertically)) {
                         IconButton(onClick = { showMenu = !showMenu }) {
                             Icon(
-                                imageVector = when (type) {
+                                imageVector = when (taskType) {
                                     "Work" -> Icons.Default.Work
                                     "Academic" -> Icons.Default.School
                                     "Personal" -> Icons.Default.Person
@@ -355,8 +360,8 @@ fun TodoItem(
                             DropdownMenuItem(
                                 text = { Text("Work") },
                                 onClick = {
-                                    selectedIcon = Icons.Default.Work
                                     taskVm.updateTaskType(id.toInt(), "Work")
+                                    taskType = "Work"
                                     onTaskCompleted()
                                     showMenu = false
                                 },
@@ -371,8 +376,8 @@ fun TodoItem(
                             DropdownMenuItem(
                                 text = { Text("Academic") },
                                 onClick = {
-                                    selectedIcon = Icons.Default.School
                                     taskVm.updateTaskType(id.toInt(), "Academic")
+                                    taskType = "Academic"
                                     onTaskCompleted()
                                     showMenu = false
                                 },
@@ -387,8 +392,8 @@ fun TodoItem(
                             DropdownMenuItem(
                                 text = { Text("Personal") },
                                 onClick = {
-                                    selectedIcon = Icons.Default.Person
                                     taskVm.updateTaskType(id.toInt(), "Personal")
+                                    taskType = "Personal"
                                     onTaskCompleted()
                                     showMenu = false
                                 },
@@ -403,8 +408,8 @@ fun TodoItem(
                             DropdownMenuItem(
                                 text = { Text("Social") },
                                 onClick = {
-                                    selectedIcon = Icons.Default.Group
                                     taskVm.updateTaskType(id.toInt(), "Social")
+                                    taskType = "Social"
                                     onTaskCompleted()
                                     showMenu = false
                                 },
@@ -443,7 +448,7 @@ fun TodoItem(
                             text = date,
                             style = MaterialTheme.typography.bodyMedium
                         )
-                        if (temp.isEmpty()) {
+                        if (temp.isEmpty() || precip.isEmpty()) {
                             CircularProgressIndicator(
                                 modifier = Modifier.size(24.dp),
                                 strokeWidth = 2.dp

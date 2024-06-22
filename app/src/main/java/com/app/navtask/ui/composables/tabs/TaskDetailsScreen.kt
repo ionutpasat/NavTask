@@ -1,5 +1,8 @@
 package com.app.navtask.ui.composables.tabs
 
+import android.content.Context
+import android.location.Address
+import android.location.Geocoder
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -44,11 +47,17 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.app.navtask.ui.model.Task
 import com.app.navtask.ui.viewmodel.TaskViewModel
+import com.google.android.gms.maps.model.LatLng
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -59,10 +68,12 @@ fun TaskDetailsScreen(
     taskVm: TaskViewModel,
     taskId: String? = null,
     temp: String? = null,
+    precip: String? = null,
     navController: NavHostController,
     onMapButtonClicked: (taskId: String) -> Unit
 ) {
     var task by remember { mutableStateOf<Task?>(null) }
+    val context = LocalContext.current
 
     var title by remember { mutableStateOf("") }
     var initialTitle by remember { mutableStateOf("") }
@@ -78,6 +89,13 @@ fun TaskDetailsScreen(
     var showDialog by remember { mutableStateOf(false) }
     var showDatePicker by remember { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState(initialSelectedDateMillis = System.currentTimeMillis())
+
+    LaunchedEffect(location) {
+        val coordinates = fetchCoordinatesFromAddress(context, location)
+        if (coordinates != null) {
+            taskVm.updateTaskLocation(task?.id ?: 0, coordinates.latitude, coordinates.longitude)
+        }
+    }
 
     LaunchedEffect(key1 = taskVm) {
         task = taskVm.getTaskById(taskId?.toInt() ?: 0)
@@ -101,7 +119,7 @@ fun TaskDetailsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Task Details") },
+                title = { Text("Task Details", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.Filled.ArrowBack, contentDescription = "Go back")
@@ -114,15 +132,14 @@ fun TaskDetailsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(16.dp)
+                .padding(start = 24.dp, end = 24.dp)
                 .verticalScroll(rememberScrollState()),
             contentAlignment = Alignment.TopCenter
         ) {
             task?.let {
                 Card(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
+                        .fillMaxWidth(),
                     elevation = CardDefaults.cardElevation(4.dp)
                 ) {
                     Column(
@@ -146,7 +163,7 @@ fun TaskDetailsScreen(
                         SectionTitle(title = "Location")
                         TextField(
                             value = location,
-                            onValueChange = { location = it },
+                            onValueChange = {location = it},
                             modifier = Modifier.fillMaxWidth()
                         )
 
@@ -246,11 +263,18 @@ fun TaskDetailsScreen(
                         }
 
                         SectionTitle(title = "Weather Forecast")
-                        Text(
-                            text = if (!temp.isNullOrEmpty()) "$temp°C" else "Loading...",
-                            style = MaterialTheme.typography.bodyLarge,
-                            modifier = Modifier.padding(bottom = 16.dp)
-                        )
+                        Row {
+                            Text(
+                                text = if (!temp.isNullOrEmpty() && temp != "Loading...") "$temp°C" else "Loading...",
+                                style = MaterialTheme.typography.bodyLarge,
+                                modifier = Modifier.padding(bottom = 16.dp)
+                            )
+                            Text(
+                                text = if (!precip.isNullOrEmpty() && precip != "Loading...") " | $precip% chance of rain" else " | Loading...",
+                                style = MaterialTheme.typography.bodyLarge,
+                                modifier = Modifier.padding(bottom = 16.dp)
+                            )
+                        }
                         Divider(color = Color.Gray, thickness = 1.dp)
 
                         Row(

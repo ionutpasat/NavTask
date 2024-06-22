@@ -77,10 +77,11 @@ fun NavigationScreens(
         composable(NavItem.Map.path + "/{taskId}") { backStackEntry ->
             MapScreen(taskVm, backStackEntry.arguments?.getString("taskId"), navController, location)
         }
-        composable(NavItem.TaskDetails.path + "/{taskId}" + "/{temp}") { backStackEntry ->
+        composable(NavItem.TaskDetails.path + "/{taskId}" + "/{temp}" + "/{precip}") { backStackEntry ->
             TaskDetailsScreen(taskVm,
                 backStackEntry.arguments?.getString("taskId"),
                 backStackEntry.arguments?.getString("temp"),
+                backStackEntry.arguments?.getString("precip"),
                 navController,
                 onMapButtonClicked = { taskId ->
                     navController.navigate(NavItem.Map.path + "/$taskId")

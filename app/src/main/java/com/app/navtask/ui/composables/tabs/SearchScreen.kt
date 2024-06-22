@@ -43,6 +43,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.app.navtask.R
@@ -60,7 +61,7 @@ import retrofit2.Response
  */
  @Composable
  fun SearchScreen(taskVm: TaskViewModel = viewModel(),
-                  onTaskButtonClicked: (taskId: String, temp: String) -> Unit) {
+                  onTaskButtonClicked: (taskId: String, temp: String, precip: String) -> Unit) {
      var searchQuery by remember { mutableStateOf("") }
      var searchResults by remember { mutableStateOf(listOf<Task>()) }
      var sortOption by remember { mutableStateOf("Date Ascending") }
@@ -196,17 +197,19 @@ import retrofit2.Response
 
  @Composable
  fun TaskItem(task: Task,
-              onTaskButtonClicked: (taskId: String, temp: String) -> Unit) {
+              onTaskButtonClicked: (taskId: String, temp: String, precip: String) -> Unit) {
      var temp by remember { mutableStateOf("Loading...") }
+     var precip by remember { mutableStateOf("Loading...") }
 
      LaunchedEffect(temp) {
          val call = WeatherService.instance.getWeather(task.latitude.toString(),
-             task.longitude.toString(),"temperature_2m_max", task.date, task.date)
+             task.longitude.toString(),"temperature_2m_max,precipitation_probability_max", task.date, task.date)
          call.enqueue(object: Callback<WeatherResponse?> {
              override fun onResponse(call: Call<WeatherResponse?>, response: Response<WeatherResponse?>) {
                  try {
                      if (response.isSuccessful) {
                          temp = response.body()?.daily?.temperature_2m_max?.get(0).toString()
+                         precip = response.body()?.daily?.precipitation_probability_max?.get(0).toString()
                      }
                  } catch (e: Exception) {
                      Log.e("Main", "Failed mate " + e.message.toString())
@@ -224,14 +227,20 @@ import retrofit2.Response
              .fillMaxWidth()
              .padding(vertical = 4.dp)
              .clickable(onClick = {
-                 onTaskButtonClicked(task.id.toString(), temp)
+                 onTaskButtonClicked(task.id.toString(), temp, precip)
              }),
          elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
      ) {
          Column(modifier = Modifier.padding(16.dp)) {
-             Text(text = task.title, style = MaterialTheme.typography.titleMedium)
+             Text(text = task.title, style = MaterialTheme.typography.titleMedium,
+                 maxLines = 1,
+                 overflow = TextOverflow.Ellipsis
+             )
              Spacer(modifier = Modifier.height(4.dp))
-             Text(text = task.description, style = MaterialTheme.typography.bodyMedium)
+             Text(text = task.description, style = MaterialTheme.typography.bodyMedium,
+                 maxLines = 1,
+                 overflow = TextOverflow.Ellipsis
+             )
              Spacer(modifier = Modifier.height(4.dp))
              Text(text = task.location, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
              Spacer(modifier = Modifier.height(4.dp))

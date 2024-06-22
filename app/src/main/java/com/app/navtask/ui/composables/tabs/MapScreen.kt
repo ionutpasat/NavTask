@@ -230,7 +230,7 @@ fun fetchDirections(
     val call = LocationService.api.getDirections(
         origin = "${origin.latitude},${origin.longitude}",
         destination = "${destination.latitude},${destination.longitude}",
-        apiKey = "MAPS_API_KEY",
+        apiKey = "AIzaSyCU0agCz5nU7BbeT7NIcez4LZcJrZ16NvE",
         mode = mode
     )
 
@@ -239,6 +239,7 @@ fun fetchDirections(
             call: Call<DirectionsResponse?>,
             response: Response<DirectionsResponse?>
         ) {
+            println("Response: $response")
             val routes = response.body()?.routes
             if (!routes.isNullOrEmpty()) {
                 val points = routes[0].overview_polyline.points

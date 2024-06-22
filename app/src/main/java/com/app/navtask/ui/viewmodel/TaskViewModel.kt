@@ -50,4 +50,10 @@ class TaskViewModel(
                 taskDao.updateTaskType(id, type)
             }
         }
+
+        fun updateTaskLocation(id: Int, latitude: Double, longitude: Double) {
+            viewModelScope.launch(Dispatchers.Unconfined) {
+                taskDao.updateTaskLocation(id, latitude, longitude)
+            }
+        }
 }

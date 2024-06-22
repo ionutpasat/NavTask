@@ -32,4 +32,7 @@ interface TaskDao {
     @Query("UPDATE tasks SET type = :type WHERE id = :id")
     suspend fun updateTaskType(id: Int, type: String)
 
+    @Query("UPDATE tasks SET latitude = :latitude, longitude = :longitude WHERE id = :id")
+    suspend fun updateTaskLocation(id: Int, latitude: Double, longitude: Double)
+
 }

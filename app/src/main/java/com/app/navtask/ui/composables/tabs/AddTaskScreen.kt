@@ -1,5 +1,6 @@
 package com.app.navtask.ui.composables.tabs
 
+import android.Manifest
 import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
@@ -8,6 +9,8 @@ import android.location.Address
 import android.location.Geocoder
 import android.os.Build
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.Orientation
@@ -77,8 +80,7 @@ fun AddTaskScreen(
     fbVm: FbViewModel,
     onAddButtonClicked: () -> Unit,
     navController: NavHostController
-)
-{
+) {
     val context = LocalContext.current
     val email = fbVm.getSignedInUser()?.email ?: "default@email.com"
     var scrollState = rememberScrollState()
@@ -94,6 +96,19 @@ fun AddTaskScreen(
     val datePickerState = rememberDatePickerState()
     var coordinates: LatLng by remember { mutableStateOf(LatLng(44.42666, 26.10243)) }
 
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { isGranted ->
+            isGranted
+        }
+    )
+
+    LaunchedEffect(Unit) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
+
     LaunchedEffect(streetAndNumber, city, country) {
         coordinates = fetchCoordinatesFromAddress(context, "$streetAndNumber, $city, $country") ?: LatLng(44.42666, 26.10243)
     }
@@ -104,8 +119,7 @@ fun AddTaskScreen(
             .imePadding()
             .verticalScroll(scrollState),
         horizontalAlignment = Alignment.CenterHorizontally
-    )
-    {
+    ) {
         IconButton(
             onClick = { navController.popBackStack() },
             modifier = Modifier.align(Alignment.Start)
@@ -115,11 +129,13 @@ fun AddTaskScreen(
 
         Spacer(modifier = Modifier.height(30.dp))
 
-        Text(text = "Add Task", style = TextStyle(
-            fontSize = 40.sp,
-            fontFamily = FontFamily.Cursive,
-            color = MaterialTheme.colorScheme.primary
-        )
+        Text(
+            text = "Add Task",
+            style = TextStyle(
+                fontSize = 40.sp,
+                fontFamily = FontFamily.Cursive,
+                color = MaterialTheme.colorScheme.primary
+            )
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -183,7 +199,7 @@ fun AddTaskScreen(
                     else -> "Low"
                 },
             ),
-            onValueChange = { priority = it.text},
+            onValueChange = { priority = it.text },
             modifier = Modifier.width(300.dp),
             onClick = {
                 showDialog = true
@@ -205,23 +221,26 @@ fun AddTaskScreen(
                 onDismissRequest = { showDialog = false },
             ) {
                 DropdownMenuItem(
-                    { Text("Low", color = Color.Green) },
+                    text = { Text("Low", color = Color.Green) },
                     onClick = {
                         showDialog = false
                         priority = "1"
-                    })
+                    }
+                )
                 DropdownMenuItem(
-                    { Text("Medium", color = Color(0xFFffcc00)) },
+                    text = { Text("Medium", color = Color(0xFFffcc00)) },
                     onClick = {
                         showDialog = false
                         priority = "2"
-                    })
+                    }
+                )
                 DropdownMenuItem(
-                    { Text("High", color = Color.Red) },
+                    text = { Text("High", color = Color.Red) },
                     onClick = {
                         showDialog = false
                         priority = "3"
-                    })
+                    }
+                )
             }
         }
 
@@ -229,7 +248,7 @@ fun AddTaskScreen(
 
         ReadonlyTextField(
             value = TextFieldValue(text = date),
-            onValueChange = { date = it.text},
+            onValueChange = { date = it.text },
             modifier = Modifier.width(300.dp),
             onClick = {
                 showDatePicker = true
@@ -248,13 +267,14 @@ fun AddTaskScreen(
                     TextButton(
                         onClick = {
                             showDatePicker = false
-                            date = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).
-                            format(Calendar.getInstance().apply {
-                                timeInMillis = if (datePickerState.selectedDateMillis != null)
-                                    datePickerState.selectedDateMillis!!
-                                else
-                                    System.currentTimeMillis()
-                            }.time)
+                            date = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(
+                                Calendar.getInstance().apply {
+                                    timeInMillis = if (datePickerState.selectedDateMillis != null)
+                                        datePickerState.selectedDateMillis!!
+                                    else
+                                        System.currentTimeMillis()
+                                }.time
+                            )
                         }
                     ) { Text("OK") }
                 },
@@ -265,8 +285,7 @@ fun AddTaskScreen(
                         }
                     ) { Text("Cancel") }
                 },
-            )
-            {
+            ) {
                 DatePicker(state = datePickerState)
             }
         }
@@ -276,8 +295,10 @@ fun AddTaskScreen(
         Button(
             onClick = {
                 val fullLocation = "$streetAndNumber, $city, $country"
-                val task = Task(0, title, description, priority.toInt(),
-                    fullLocation, coordinates.latitude, coordinates.longitude, date, "Work")
+                val task = Task(
+                    0, title, description, priority.toInt(),
+                    fullLocation, coordinates.latitude, coordinates.longitude, date, "Work"
+                )
                 taskVm.addTask(task)
                 scheduleNotification(context, datePickerState, title)
                 userVm.incrementTasksInProgress(email)
@@ -308,7 +329,7 @@ fun ReadonlyTextField(
                 "Low" -> Color.Green
                 "Medium" -> Color(0xFFffcc00)
                 "High" -> Color.Red
-                else -> MaterialTheme.colorScheme.onTertiary
+                else -> Color.Gray
             }),
             singleLine = true
         )
@@ -369,7 +390,7 @@ fun scheduleNotification(
     val day = selectedDate.get(Calendar.DAY_OF_MONTH)
 
     val calendar = Calendar.getInstance()
-    calendar.set(year, month, day, 0, 53)
+    calendar.set(year, month, day, 5, 0)
 
     alarmManager.setExactAndAllowWhileIdle(
         AlarmManager.RTC_WAKEUP,

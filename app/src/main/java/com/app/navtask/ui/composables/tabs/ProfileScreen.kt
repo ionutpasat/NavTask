@@ -1,9 +1,12 @@
 package com.app.navtask.ui.composables.tabs
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.widget.Switch
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -50,6 +53,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import coil.compose.AsyncImage
 import com.app.navtask.ui.viewmodel.FbViewModel
 import com.app.navtask.R
@@ -73,6 +77,7 @@ fun ProfileScreen(
     var tasksInProgress by remember { mutableStateOf(0) }
     var totalTasks by remember { mutableStateOf(0) }
     val context = LocalContext.current
+    val permissionState = remember { mutableStateOf(false) }
 
     LaunchedEffect(email) {
         val user = userVm.getUserByEmail(email)
@@ -98,6 +103,29 @@ fun ProfileScreen(
             }
         }
     )
+
+    val requestPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { isGranted ->
+            permissionState.value = isGranted
+            if (isGranted) {
+                pickImageLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+            } else {
+                // Handle permission denial
+                Toast.makeText(context, "Permission denied", Toast.LENGTH_SHORT).show()
+            }
+        }
+    )
+
+    fun checkAndRequestPermission() {
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_MEDIA_LOCATION) ==
+            PackageManager.PERMISSION_GRANTED) {
+            permissionState.value = true
+            pickImageLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+        } else {
+            requestPermissionLauncher.launch(Manifest.permission.READ_MEDIA_IMAGES)
+        }
+    }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -154,7 +182,7 @@ fun ProfileScreen(
                             modifier = Modifier
                                 .size(120.dp)
                                 .clip(CircleShape)
-                                .clickable { pickImageLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
+                                .clickable { checkAndRequestPermission() },
                             contentScale = ContentScale.Crop
                         )
                     } else {
@@ -165,7 +193,7 @@ fun ProfileScreen(
                             modifier = Modifier
                                 .size(120.dp)
                                 .clip(CircleShape)
-                                .clickable { pickImageLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
+                                .clickable { checkAndRequestPermission() },
                         )
                     }
 

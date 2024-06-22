@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -71,14 +72,14 @@ fun HomeScreen(
         topBar = {
             TopAppBar(
                 modifier = Modifier.padding(start = 8.dp, end = 20.dp),
-                title = { Text("Home") },
+                title = { Text("Home", fontWeight = FontWeight.Bold) },
                 actions = {
                     FloatingActionButton(
                         onClick = { onAddTaskButtonClicked() },
                     ) {
                         Icon(Icons.Filled.Add, contentDescription = "Add Task")
                     }
-                }
+                },
             )
         }
     ) { paddingValues ->
@@ -96,7 +97,7 @@ fun HomeScreen(
             } ?: run {
                 Text(
                     modifier = Modifier.padding(top = 300.dp),
-                    text = "You have no tasks yet! \nClick the + button in the Home section to add one",
+                    text = "You have no tasks yet! \nClick the + button to add one",
                     style = typography.titleLarge.copy(
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
@@ -129,12 +130,13 @@ fun TaskDetailCard(task: Task) {
             horizontalAlignment = Alignment.Start
         ) {
             var temp by remember { mutableStateOf("") }
+            var precip by remember { mutableStateOf("") }
 
             LaunchedEffect(temp) {
                 val call = WeatherService.instance.getWeather(
                     task.latitude.toString(),
                     task.longitude.toString(),
-                    "temperature_2m_max",
+                    "temperature_2m_max,precipitation_probability_max",
                     task.date,
                     task.date
                 )
@@ -142,8 +144,9 @@ fun TaskDetailCard(task: Task) {
                     override fun onResponse(call: Call<WeatherResponse?>, response: Response<WeatherResponse?>) {
                         try {
                             if (response.isSuccessful) {
-                                println("Weather response: $response")
+                                println("Weather response: ${response.body()}")
                                 temp = response.body()?.daily?.temperature_2m_max?.get(0).toString()
+                                precip = response.body()?.daily?.precipitation_probability_max?.get(0).toString()
                             }
                         } catch (e: Exception) {
                             Log.e("Main", "Failed mate " + e.message.toString())
@@ -156,7 +159,12 @@ fun TaskDetailCard(task: Task) {
                 })
             }
 
-            SectionTitle(title = "Focus Task")
+            Text(
+                text = "Focus Task",
+                style = MaterialTheme.typography.headlineSmall,
+                modifier = Modifier.padding(vertical = 8.dp),
+                fontWeight = FontWeight.Bold
+            )
             Divider(color = MaterialTheme.colorScheme.primary, thickness = 1.dp)
 
             SectionTitle(title = "Title")
@@ -206,11 +214,18 @@ fun TaskDetailCard(task: Task) {
             )
             Divider(color = Color.DarkGray, thickness = 1.dp)
             SectionTitle(title = "Weather Forecast")
-            Text(
-                text = if (temp.isNotEmpty()) "$temp°C" else "Loading...",
-                style = MaterialTheme.typography.bodyLarge,
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
+            Row {
+                Text(
+                    text = if (temp.isNotEmpty()) "$temp°C" else "Loading...",
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+                Text(
+                    text = if (precip.isNotEmpty()) " | $precip% chance of rain" else " | Loading...",
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+            }
         }
     }
 }

@@ -36,12 +36,20 @@ fun SuccessScreen(vm: FbViewModel, onGoToLoginClicked: () -> Unit) {
                 .padding(16.dp)
         ) {
             Text(
-                text = "You have been signed in successfully",
+                text = "You have been signed in",
                 style = MaterialTheme.typography.headlineMedium.copy(
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Bold
                 ),
-                modifier = Modifier.padding(16.dp)
+                modifier = Modifier.padding(start = 16.dp, end = 16.dp)
+            )
+            Text(
+                text = "successfully",
+                style = MaterialTheme.typography.headlineMedium.copy(
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Bold
+                ),
+                modifier = Modifier.align(Alignment.CenterHorizontally).padding(bottom = 16.dp)
             )
 
             Button(onClick = { onGoToLoginClicked() }) {

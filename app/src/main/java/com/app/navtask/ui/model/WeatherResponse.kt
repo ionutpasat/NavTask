@@ -5,5 +5,6 @@ data class WeatherResponse(
 )
 
 data class Daily(
-    val temperature_2m_max: List<Double>
+    val temperature_2m_max: List<Double>,
+    val precipitation_probability_max: List<Int>
 )
