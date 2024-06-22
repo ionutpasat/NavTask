@@ -44,4 +44,10 @@ class TaskViewModel(
                 taskDao.updateTask(id, title, description, location, priority, date)
             }
         }
+
+        fun updateTaskType(id: Int, type: String) {
+            viewModelScope.launch(Dispatchers.Unconfined) {
+                taskDao.updateTaskType(id, type)
+            }
+        }
 }

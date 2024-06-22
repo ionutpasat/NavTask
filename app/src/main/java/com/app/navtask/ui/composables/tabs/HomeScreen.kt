@@ -32,9 +32,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.app.navtask.ui.dao.WeatherService
 import com.app.navtask.ui.model.Task
 import com.app.navtask.ui.model.WeatherResponse
@@ -63,13 +67,14 @@ fun HomeScreen(
     }
 
     Scaffold(
+        modifier = Modifier.padding(top = 16.dp),
         topBar = {
             TopAppBar(
+                modifier = Modifier.padding(start = 8.dp, end = 20.dp),
                 title = { Text("Home") },
                 actions = {
                     FloatingActionButton(
                         onClick = { onAddTaskButtonClicked() },
-                        modifier = Modifier.padding(8.dp)
                     ) {
                         Icon(Icons.Filled.Add, contentDescription = "Add Task")
                     }
@@ -81,7 +86,8 @@ fun HomeScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(16.dp)
+                .padding(8.dp)
+                .padding(bottom = 64.dp)
                 .verticalScroll(rememberScrollState()),
             contentAlignment = Alignment.TopCenter
         ) {
@@ -89,9 +95,18 @@ fun HomeScreen(
                 TaskDetailCard(task = it)
             } ?: run {
                 Text(
-                    text = "You have no tasks yet! Click the + button to add one",
-                    style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.padding(top = 300.dp),
+                    text = "You have no tasks yet! \nClick the + button in the Home section to add one",
+                    style = typography.titleLarge.copy(
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.DarkGray,
+                        shadow = Shadow(
+                            color = Color.Black.copy(alpha = 0.25f),
+                            offset = Offset(4f, 4f),
+                            blurRadius = 8f
+                        )
+                    ),
                     textAlign = TextAlign.Center
                 )
             }
@@ -104,7 +119,9 @@ fun TaskDetailCard(task: Task) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp),
+            .padding(bottom = 16.dp)
+            .padding(start = 16.dp)
+            .padding(end = 16.dp),
         elevation = CardDefaults.cardElevation(4.dp)
     ) {
         Column(
@@ -125,6 +142,7 @@ fun TaskDetailCard(task: Task) {
                     override fun onResponse(call: Call<WeatherResponse?>, response: Response<WeatherResponse?>) {
                         try {
                             if (response.isSuccessful) {
+                                println("Weather response: $response")
                                 temp = response.body()?.daily?.temperature_2m_max?.get(0).toString()
                             }
                         } catch (e: Exception) {
@@ -147,21 +165,21 @@ fun TaskDetailCard(task: Task) {
                 style = MaterialTheme.typography.bodyLarge,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
-
+            Divider(color = Color.DarkGray, thickness = 1.dp)
             SectionTitle(title = "Description")
             Text(
                 text = task.description,
                 style = MaterialTheme.typography.bodyLarge,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
-
+            Divider(color = Color.DarkGray, thickness = 1.dp)
             SectionTitle(title = "Location")
             Text(
                 text = task.location,
                 style = MaterialTheme.typography.bodyLarge,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
-
+            Divider(color = Color.DarkGray, thickness = 1.dp)
             SectionTitle(title = "Priority")
             Text(
                 text = when (task.priority) {
@@ -179,17 +197,17 @@ fun TaskDetailCard(task: Task) {
                     else -> Color.Green
                 }
             )
-
+            Divider(color = Color.DarkGray, thickness = 1.dp)
             SectionTitle(title = "Date")
             Text(
                 text = task.date,
                 style = MaterialTheme.typography.bodyLarge,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
-
+            Divider(color = Color.DarkGray, thickness = 1.dp)
             SectionTitle(title = "Weather Forecast")
             Text(
-                text = if (temp.isNotEmpty()) temp else "Loading...",
+                text = if (temp.isNotEmpty()) "$temp°C" else "Loading...",
                 style = MaterialTheme.typography.bodyLarge,
                 modifier = Modifier.padding(bottom = 16.dp)
             )

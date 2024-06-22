@@ -8,19 +8,35 @@ import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.DirectionsWalk
+import androidx.compose.material.icons.filled.DirectionsBus
+import androidx.compose.material.icons.filled.DirectionsCar
+import androidx.compose.material.icons.filled.DirectionsWalk
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Switch
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,12 +44,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.app.navtask.R
 import com.app.navtask.ui.dao.DirectionsResponse
+import com.app.navtask.ui.dao.Leg
 import com.app.navtask.ui.dao.LocationService
+import com.app.navtask.ui.dao.TravelDistance
+import com.app.navtask.ui.dao.TravelDuration
 import com.app.navtask.ui.model.Task
 import com.app.navtask.ui.viewmodel.TaskViewModel
-import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
@@ -45,6 +62,8 @@ import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.Polyline
 import com.google.maps.android.compose.rememberCameraPositionState
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -70,6 +89,11 @@ fun MapScreen(
     var task by remember { mutableStateOf<Task?>(null) }
     var currentLocation by remember { mutableStateOf<LatLng?>(null) }
     var polylinePoints by remember { mutableStateOf<List<LatLng>>(emptyList()) }
+    val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
+    var mode by remember { mutableStateOf("driving") }
+    var duration by remember { mutableStateOf("") }
+    var distance by remember { mutableStateOf("") }
 
     LaunchedEffect(key1 = taskVm) {
         task = taskVm.getTaskById(taskId?.toInt() ?: 0)
@@ -87,33 +111,12 @@ fun MapScreen(
         }
     }
 
-    LaunchedEffect(currentLocation, coordinates) {
+    LaunchedEffect(currentLocation, coordinates, mode) {
         if (currentLocation != null && task != null) {
-            // Fetch directions
-            val origin = "${currentLocation!!.latitude},${currentLocation!!.longitude}"
-            val destination = "${coordinates.latitude},${coordinates.longitude}"
-
-            val call = LocationService.api.getDirections(
-                origin = origin,
-                destination = destination,
-                apiKey = "MAPS_API_KEY"
-            )
-
-            call.enqueue(object : Callback<DirectionsResponse?> {
-                override fun onResponse(
-                    call: Call<DirectionsResponse?>,
-                    response: Response<DirectionsResponse?>
-                ) {
-                    val routes = response.body()?.routes
-                    if (!routes.isNullOrEmpty()) {
-                        val points = routes[0].overview_polyline.points
-                        polylinePoints = decodePolyline(points)
-                    }
-                }
-
-                override fun onFailure(call: Call<DirectionsResponse?>, t: Throwable) {
-                    Log.e("MapScreen", "Failed to fetch directions", t)
-                }
+            fetchDirections(currentLocation!!, coordinates, mode, snackbarHostState, coroutineScope, onDirectionsFetched = { points, timeInfo: Leg ->
+                polylinePoints = points
+                duration = timeInfo.duration.text ?: ""
+                distance = timeInfo.distance.text ?: ""
             })
             cameraPositionState.position = CameraPosition.fromLatLngZoom(currentLocation!!, 13f)
         }
@@ -147,16 +150,51 @@ fun MapScreen(
                 )
             }
         }
+
+        Column(
+            modifier = Modifier.align(Alignment.BottomCenter).padding(top = 16.dp).fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Row{
+                Text("$duration -", color = MaterialTheme.colorScheme.scrim)
+                Text("- $distance", color = MaterialTheme.colorScheme.scrim)
+            }
+            Row {
+                IconButton(onClick = { mode = "walking" },
+                    colors = IconButtonDefaults.iconButtonColors(contentColor = MaterialTheme.colorScheme.scrim),
+                    modifier = Modifier.size(64.dp)) {
+                    Icon(Icons.AutoMirrored.Filled.DirectionsWalk, contentDescription = "Walk")
+                }
+                IconButton(onClick = { mode = "transit" },
+                    colors = IconButtonDefaults.iconButtonColors(contentColor = MaterialTheme.colorScheme.scrim),
+                    modifier = Modifier.size(64.dp)) {
+                    Icon(Icons.Default.DirectionsBus, contentDescription = "Transit")
+                }
+                IconButton(onClick = { mode = "driving" },
+                    colors = IconButtonDefaults.iconButtonColors(contentColor = MaterialTheme.colorScheme.scrim),
+                    modifier = Modifier.size(64.dp)) {
+                    Icon(Icons.Default.DirectionsCar, contentDescription = "Drive")
+                }
+            }
+        }
+
         Switch(
             checked = uiSettings.zoomControlsEnabled,
             onCheckedChange = {
                 uiSettings = uiSettings.copy(zoomControlsEnabled = it)
             },
-            modifier = Modifier.align(Alignment.TopEnd)
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(top = 48.dp)
         )
+
         IconButton(
             onClick = { navController.popBackStack() },
             modifier = Modifier.align(Alignment.TopStart)
+                .padding(start = 48.dp),
+            colors = IconButtonDefaults.iconButtonColors(
+                contentColor = MaterialTheme.colorScheme.scrim
+            )
         ) {
             Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Go back")
         }
@@ -164,12 +202,69 @@ fun MapScreen(
         IconButton(
             onClick = { openGoogleMapsDirections(context, currentLocation!!, coordinates) },
             modifier = Modifier.align(Alignment.BottomStart)
+                .size(48.dp),
+            colors = IconButtonDefaults.iconButtonColors(
+                contentColor = MaterialTheme.colorScheme.scrim
+            )
         ) {
             Icon(Icons.Filled.LocationOn,
                 contentDescription = "Go back",
                 modifier = Modifier.size(48.dp))
         }
+
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.align(Alignment.BottomCenter)
+        )
     }
+}
+
+fun fetchDirections(
+    origin: LatLng,
+    destination: LatLng,
+    mode: String,
+    snackbarHostState: SnackbarHostState,
+    coroutineScope: CoroutineScope,
+    onDirectionsFetched: (List<LatLng>, Leg) -> Unit
+) {
+    val call = LocationService.api.getDirections(
+        origin = "${origin.latitude},${origin.longitude}",
+        destination = "${destination.latitude},${destination.longitude}",
+        apiKey = "MAPS_API_KEY",
+        mode = mode
+    )
+
+    call.enqueue(object : Callback<DirectionsResponse?> {
+        override fun onResponse(
+            call: Call<DirectionsResponse?>,
+            response: Response<DirectionsResponse?>
+        ) {
+            val routes = response.body()?.routes
+            if (!routes.isNullOrEmpty()) {
+                val points = routes[0].overview_polyline.points
+                onDirectionsFetched(decodePolyline(points), routes[0].legs.firstOrNull()!!)
+            } else {
+                coroutineScope.launch {
+                    snackbarHostState.showSnackbar(
+                        message = "No route found between start and destination",
+                        duration = SnackbarDuration.Short
+                    )
+                }
+                onDirectionsFetched(emptyList(), Leg(TravelDuration("", 0), TravelDistance("", 0)))
+            }
+        }
+
+        override fun onFailure(call: Call<DirectionsResponse?>, t: Throwable) {
+            Log.e("MapScreen", "Failed to fetch directions", t)
+            coroutineScope.launch {
+                snackbarHostState.showSnackbar(
+                    message = "Failed to fetch directions",
+                    duration = SnackbarDuration.Short
+                )
+            }
+            onDirectionsFetched(emptyList(), Leg(TravelDuration("", 0), TravelDistance("", 0)))
+        }
+    })
 }
 
 fun decodePolyline(encoded: String): List<LatLng> {

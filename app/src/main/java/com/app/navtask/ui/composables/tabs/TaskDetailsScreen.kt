@@ -14,6 +14,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -63,10 +65,15 @@ fun TaskDetailsScreen(
     var task by remember { mutableStateOf<Task?>(null) }
 
     var title by remember { mutableStateOf("") }
+    var initialTitle by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
+    var initialDescription by remember { mutableStateOf("") }
     var location by remember { mutableStateOf("") }
+    var initialLocation by remember { mutableStateOf("") }
     var priority by remember { mutableStateOf("1") }
+    var initialPriority by remember { mutableStateOf("1") }
     var date by remember { mutableStateOf("") }
+    var initialDate by remember { mutableStateOf("") }
 
     var showDialog by remember { mutableStateOf(false) }
     var showDatePicker by remember { mutableStateOf(false) }
@@ -76,12 +83,20 @@ fun TaskDetailsScreen(
         task = taskVm.getTaskById(taskId?.toInt() ?: 0)
         task?.let {
             title = it.title
+            initialTitle = it.title
             description = it.description
+            initialDescription = it.description
             location = it.location
+            initialLocation = it.location
             priority = it.priority.toString()
+            initialPriority = it.priority.toString()
             date = it.date
+            initialDate = it.date
         }
     }
+
+    val isSaveEnabled = title != initialTitle || description != initialDescription ||
+            location != initialLocation || priority != initialPriority || date != initialDate
 
     Scaffold(
         topBar = {
@@ -190,15 +205,15 @@ fun TaskDetailsScreen(
                         Spacer(modifier = Modifier.height(16.dp))
 
                         SectionTitle(title = "Date")
-                        ReadonlyTextField(
-                            value = TextFieldValue(text = date),
-                            onValueChange = { date = it.text },
+                        TextField(
+                            value = date,
+                            onValueChange = { date = it },
                             modifier = Modifier.width(300.dp),
-                            onClick = {
-                                showDatePicker = true
-                            },
-                            label = {
-                                Text(text = "Date")
+                            readOnly = true,
+                            trailingIcon = {
+                                IconButton(onClick = { showDatePicker = true }) {
+                                    Icon(Icons.Filled.DateRange, contentDescription = "Select Date")
+                                }
                             }
                         )
 
@@ -221,10 +236,9 @@ fun TaskDetailsScreen(
                                 },
                                 dismissButton = {
                                     TextButton(
-                                        onClick = {
-                                            showDatePicker = false
-                                        }
-                                    ) { Text("Cancel") }
+                                        onClick = { showDatePicker = false }) {
+                                        Text("Cancel")
+                                    }
                                 },
                             ) {
                                 DatePicker(state = datePickerState)
@@ -233,7 +247,7 @@ fun TaskDetailsScreen(
 
                         SectionTitle(title = "Weather Forecast")
                         Text(
-                            text = if (!temp.isNullOrEmpty()) temp else "Loading...",
+                            text = if (!temp.isNullOrEmpty()) "$temp°C" else "Loading...",
                             style = MaterialTheme.typography.bodyLarge,
                             modifier = Modifier.padding(bottom = 16.dp)
                         )
@@ -261,7 +275,8 @@ fun TaskDetailsScreen(
                                     )
                                     navController.popBackStack()
                                 },
-                                modifier = Modifier.padding(top = 16.dp)
+                                modifier = Modifier.padding(top = 16.dp),
+                                enabled = isSaveEnabled // Enable button only when fields are modified
                             ) {
                                 Text(text = "Save Changes")
                             }

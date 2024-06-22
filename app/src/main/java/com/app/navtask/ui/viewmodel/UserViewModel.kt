@@ -27,7 +27,27 @@ class UserViewModel(
         return dao.getAllUsers()
     }
 
-    suspend fun updateThemePreference(email: String, themePreference: Boolean) {
-        dao.updateThemePreference(email, themePreference)
+    fun updateName(email: String, name: String) {
+        viewModelScope.launch(Dispatchers.Unconfined) {
+            dao.updateName(email, name)
+        }
+    }
+
+    fun incrementTasksInProgress(email: String) {
+        viewModelScope.launch(Dispatchers.Unconfined) {
+            dao.incrementTasksInProgress(email)
+        }
+    }
+
+    fun incrementTasksCompleted(email: String) {
+        viewModelScope.launch(Dispatchers.Unconfined) {
+            dao.incrementTasksCompleted(email)
+        }
+    }
+
+    fun decrementTasksInProgress(email: String) {
+        viewModelScope.launch(Dispatchers.Unconfined) {
+            dao.decrementTasksInProgress(email)
+        }
     }
 }

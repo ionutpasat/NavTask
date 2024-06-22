@@ -8,6 +8,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -21,10 +22,19 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Group
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.School
+import androidx.compose.material.icons.filled.Work
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -55,6 +65,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -64,7 +75,9 @@ import com.app.navtask.ui.model.Task
 import com.app.navtask.ui.model.WeatherResponse
 import com.app.navtask.ui.theme.md_theme_light_error
 import com.app.navtask.ui.theme.typography
+import com.app.navtask.ui.viewmodel.FbViewModel
 import com.app.navtask.ui.viewmodel.TaskViewModel
+import com.app.navtask.ui.viewmodel.UserViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import retrofit2.Call
@@ -79,7 +92,8 @@ import kotlin.math.roundToInt
 @Composable
 fun ListScreen(
     taskVm : TaskViewModel,
-//    weatherVm : WeatherViewModel,
+    userVm: UserViewModel,
+    fbVm: FbViewModel,
     onTaskButtonClicked: (taskId: String, temp: String) -> Unit
 ) {
     val coroutineScope = rememberCoroutineScope()
@@ -118,7 +132,7 @@ fun ListScreen(
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(bottom = 80.dp) // Adjust the value as needed
+                .padding(top = 8.dp, bottom = 80.dp) // Adjust the value as needed
         ) {
             items(taskList) { todo ->
                 TodoItem(
@@ -134,9 +148,12 @@ fun ListScreen(
                     latitude = todo.latitude.toString(),
                     longitude = todo.longitude.toString(),
                     date = todo.date,
+                    type = todo.type,
                     onTaskButtonClicked,
                     taskVm,
-                    onTaskDeleted = {
+                    userVm,
+                    fbVm,
+                    onTaskCompleted = {
                         coroutineScope.launch {
                             taskList = taskVm.getAllTasks()
                         }
@@ -162,26 +179,30 @@ fun TodoItem(
     latitude: String,
     longitude: String,
     date: String,
+    type: String,
     onButtonClicked: (taskId: String, temp: String) -> Unit,
     taskVm: TaskViewModel,
-    onTaskDeleted: () -> Unit
-)
-//    onSwipeAway: (taskId: String) -> Unit
-{
-    var temp by remember { mutableStateOf("") }
+    userVm: UserViewModel,
+    fbVm: FbViewModel,
+    onTaskCompleted: () -> Unit
+) {
+    var temp by remember { mutableStateOf("Loading...") }
     var offset by remember { mutableFloatStateOf(0f) }
     var dismissRight by remember { mutableStateOf(false) }
     var dismissLeft by remember { mutableStateOf(false) }
+    var showMenu by remember { mutableStateOf(false) }
+    var selectedIcon by remember { mutableStateOf(Icons.Default.Work) }
+    val email = fbVm.getSignedInUser()?.email ?: "default@email.com"
     val density = LocalDensity.current.density
     val context = LocalContext.current
     val swipeThreshold = 400f
     val sensitivityFactor = 3f
-    val showConfirmationDialog = remember { mutableStateOf(false) }
+    val showCompletionDialog = remember { mutableStateOf(false) }
 
     LaunchedEffect(dismissRight) {
         if (dismissRight) {
             delay(300)
-            showConfirmationDialog.value = true
+            showCompletionDialog.value = true
             dismissRight = false
         }
     }
@@ -189,42 +210,55 @@ fun TodoItem(
     LaunchedEffect(dismissLeft) {
         if (dismissLeft) {
             delay(300)
-            showConfirmationDialog.value = true
+            showCompletionDialog.value = true
             dismissLeft = false
         }
     }
 
-    if (showConfirmationDialog.value) {
+    if (showCompletionDialog.value) {
         AlertDialog(
-            onDismissRequest = { showConfirmationDialog.value = false },
-            title = { Text("Confirm Task Deletion") },
-            text = { Text("Are you sure you want to delete this task?",
-                modifier = Modifier.fillMaxWidth()) },
+            onDismissRequest = { showCompletionDialog.value = false },
+            title = { Text("Task Completion") },
+            text = { Text("Was this task completed?", modifier = Modifier.fillMaxWidth()) },
             confirmButton = {
                 TextButton(
                     onClick = {
+                        onTaskCompleted()
                         taskVm.deleteTaskById(id.toInt())
-                        onTaskDeleted()
-                        showConfirmationDialog.value = false
-                        Toast.makeText(context, "Task deleted!", Toast.LENGTH_SHORT).show()
+                        userVm.incrementTasksCompleted(email)
+                        showCompletionDialog.value = false
+                        Toast.makeText(context, "Task marked as completed!", Toast.LENGTH_SHORT).show()
                     }
                 ) {
-                    Text("Delete")
+                    Text("Yes")
                 }
             },
             dismissButton = {
-                TextButton(
-                    onClick = { showConfirmationDialog.value = false }
-                ) {
-                    Text("Cancel")
+                Row {
+                    TextButton(
+                        onClick = {
+                            onTaskCompleted()
+                            taskVm.deleteTaskById(id.toInt())
+                            userVm.decrementTasksInProgress(email)
+                            showCompletionDialog.value = false
+                            Toast.makeText(context, "Task marked as not completed!", Toast.LENGTH_SHORT).show()
+                        }
+                    ) {
+                        Text("No")
+                    }
+                    TextButton(
+                        onClick = { showCompletionDialog.value = false }
+                    ) {
+                        Text("Cancel")
+                    }
                 }
             }
         )
     }
 
     LaunchedEffect(temp) {
-        val call = WeatherService.instance.getWeather(latitude, longitude,"temperature_2m_max", date, date)
-        call.enqueue(object: Callback<WeatherResponse?> {
+        val call = WeatherService.instance.getWeather(latitude, longitude, "temperature_2m_max", date, date)
+        call.enqueue(object : Callback<WeatherResponse?> {
             override fun onResponse(call: Call<WeatherResponse?>, response: Response<WeatherResponse?>) {
                 try {
                     if (response.isSuccessful) {
@@ -259,7 +293,6 @@ fun TodoItem(
                     detectHorizontalDragGestures(onDragEnd = {
                         offset = 0f
                     }) { change, dragAmount ->
-
                         offset += (dragAmount / density) * sensitivityFactor
                         when {
                             offset > swipeThreshold -> {
@@ -279,7 +312,7 @@ fun TodoItem(
                         label = ""
                     ).value,
                 )
-                .width(405.dp)
+                .fillMaxWidth() // Ensure all cards have the same width
                 .padding(vertical = 8.dp, horizontal = 8.dp)
                 .clickable(onClick = {
                     onButtonClicked(id, temp)
@@ -289,81 +322,164 @@ fun TodoItem(
             ),
             elevation = CardDefaults.cardElevation(defaultElevation = 5.dp)
         ) {
-            Row(
-                modifier = Modifier.padding(16.dp)
-            ) {
-                Image(
-                    painter = painterResource(id = R.drawable.anonymous),
-                    contentDescription = "Todo Image",
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(shape = MaterialTheme.shapes.small)
-                        .clip(RectangleShape)
-                        .align(Alignment.CenterVertically)
+            Column(modifier = Modifier.padding(16.dp))
+            {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.headlineSmall,
+                    maxLines = 1, // Limit to 1 line
+                    overflow = TextOverflow.Ellipsis // Show ellipsis if text is too long,
                 )
-
-                Spacer(modifier = Modifier.width(16.dp))
-
-                // Title and Description
-                Column(
-                    modifier = Modifier.weight(1f)
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text(
-                        text = title,
-                        style = typography.headlineSmall
-                    )
-                    Text(
-                        text = description,
-                        style = typography.bodyMedium
-                    )
-                }
+                    // Dropdown menu for icon selection
+                    Box(modifier = Modifier.align(Alignment.CenterVertically)) {
+                        IconButton(onClick = { showMenu = !showMenu }) {
+                            Icon(
+                                imageVector = when (type) {
+                                    "Work" -> Icons.Default.Work
+                                    "Academic" -> Icons.Default.School
+                                    "Personal" -> Icons.Default.Person
+                                    "Social" -> Icons.Default.Group
+                                    else -> Icons.Default.Work
+                                },
+                                contentDescription = "Select Icon",
+                                modifier = Modifier.size(40.dp)
+                            )
+                        }
+                        DropdownMenu(
+                            expanded = showMenu,
+                            onDismissRequest = { showMenu = false }
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text("Work") },
+                                onClick = {
+                                    selectedIcon = Icons.Default.Work
+                                    taskVm.updateTaskType(id.toInt(), "Work")
+                                    onTaskCompleted()
+                                    showMenu = false
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = Icons.Default.Work,
+                                        contentDescription = "Work Icon",
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Academic") },
+                                onClick = {
+                                    selectedIcon = Icons.Default.School
+                                    taskVm.updateTaskType(id.toInt(), "Academic")
+                                    onTaskCompleted()
+                                    showMenu = false
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = Icons.Default.School,
+                                        contentDescription = "School Icon",
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Personal") },
+                                onClick = {
+                                    selectedIcon = Icons.Default.Person
+                                    taskVm.updateTaskType(id.toInt(), "Personal")
+                                    onTaskCompleted()
+                                    showMenu = false
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = Icons.Default.Person,
+                                        contentDescription = "Person Icon",
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Social") },
+                                onClick = {
+                                    selectedIcon = Icons.Default.Group
+                                    taskVm.updateTaskType(id.toInt(), "Social")
+                                    onTaskCompleted()
+                                    showMenu = false
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = Icons.Default.Group,
+                                        contentDescription = "Group Icon",
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                }
+                            )
+                        }
+                    }
 
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .align(Alignment.CenterVertically)
-                        .padding(start = 16.dp)
-                ) {
-                    Text(
-                        text = date,
-                        style = typography.bodyMedium
-                    )
-                    if (temp.isEmpty()) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(24.dp),
-                            strokeWidth = 2.dp
-                        )
-                    } else {
+                    Spacer(modifier = Modifier.width(16.dp))
+
+                    // Title and Description
+                    Column(
+                        modifier = Modifier.weight(1f)
+                    ) {
                         Text(
-                            text = "$temp°C",
-                            style = typography.bodyMedium
+                            text = description,
+                            style = MaterialTheme.typography.bodyMedium,
+                            maxLines = 2, // Limit to 2 lines
+                            overflow = TextOverflow.Ellipsis // Show ellipsis if text is too long
                         )
                     }
-                }
 
-                Spacer(modifier = Modifier.width(64.dp))
-
-                // Colored circle based on priority
-                Canvas(
-                    modifier = Modifier
-                        .size(30.dp)
-                        .padding(top = 12.dp)
-                        .align(Alignment.CenterVertically)
-                ) {
-                    drawIntoCanvas {
-                        val circleColor = when (priority) {
-                            Priority.LOW -> Color.Green
-                            Priority.MEDIUM -> Color(0xFFffcc00) // Orange
-                            Priority.HIGH -> Color.Red
-                        }
-                        it.drawCircle(
-                            radius = size.minDimension / 1.2f,
-                            paint = Paint().apply {
-                                color = circleColor
-                                style = PaintingStyle.Fill
-                            },
-                            center = Offset.Zero
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .align(Alignment.CenterVertically)
+                            .padding(start = 16.dp)
+                    ) {
+                        Text(
+                            text = date,
+                            style = MaterialTheme.typography.bodyMedium
                         )
+                        if (temp.isEmpty()) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(24.dp),
+                                strokeWidth = 2.dp
+                            )
+                        } else {
+                            Text(
+                                text = "$temp°C",
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.width(64.dp))
+
+                    // Colored circle based on priority
+                    Canvas(
+                        modifier = Modifier
+                            .size(30.dp)
+                            .padding(top = 12.dp)
+                            .align(Alignment.CenterVertically)
+                    ) {
+                        drawIntoCanvas {
+                            val circleColor = when (priority) {
+                                Priority.LOW -> Color.Green
+                                Priority.MEDIUM -> Color(0xFFffcc00) // Orange
+                                Priority.HIGH -> Color.Red
+                            }
+                            it.drawCircle(
+                                radius = size.minDimension / 1.2f,
+                                paint = Paint().apply {
+                                    color = circleColor
+                                    style = PaintingStyle.Fill
+                                },
+                                center = Offset.Zero
+                            )
+                        }
                     }
                 }
             }

@@ -88,7 +88,8 @@ fun NavigationScreens(
             )
         }
         composable(NavItem.AddTask.path) { isFromAddTask = true
-            AddTaskScreen(taskVm, onAddButtonClicked = {
+            AddTaskScreen(taskVm, userVm, vm,
+                onAddButtonClicked = {
                 navController.navigate(NavItem.MainAppScreen.path)
             },
             navController

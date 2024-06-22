@@ -26,11 +26,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.DarkMode
 import androidx.compose.material.icons.outlined.Logout
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -64,25 +67,35 @@ fun ProfileScreen(
     val email = vm.getSignedInUser()?.email ?: "default@email.com"
     var userState by remember { mutableStateOf(User()) }
     var imageUri by remember { mutableStateOf<Uri?>(null) }
+    var name by remember { mutableStateOf("") }
+    var isEditing by remember { mutableStateOf(false) }
+    var tasksCompleted by remember { mutableStateOf(0) }
+    var tasksInProgress by remember { mutableStateOf(0) }
+    var totalTasks by remember { mutableStateOf(0) }
     val context = LocalContext.current
 
     LaunchedEffect(email) {
         val user = userVm.getUserByEmail(email)
         if (user != null) {
             userState = user
+            name = user.name
             imageUri = Uri.parse(user.profileImageUri)
+            tasksCompleted = user.tasksCompleted
+            tasksInProgress = user.tasksInProgress
+            totalTasks = tasksCompleted + tasksInProgress
         }
     }
 
     val pickImageLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia(),
-        onResult = { uri -> if (uri != null) {
-            val flag = Intent.FLAG_GRANT_READ_URI_PERMISSION
-            context.contentResolver.takePersistableUriPermission(uri, flag)
-            imageUri = uri
-            userState.profileImageUri = uri.toString()
-            userVm.addUser(userState.copy())
-        }
+        onResult = { uri ->
+            if (uri != null) {
+                val flag = Intent.FLAG_GRANT_READ_URI_PERMISSION
+                context.contentResolver.takePersistableUriPermission(uri, flag)
+                imageUri = uri
+                userState.profileImageUri = uri.toString()
+                userVm.addUser(userState.copy())
+            }
         }
     )
 
@@ -100,8 +113,7 @@ fun ProfileScreen(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Box(
-                    modifier = Modifier
-                        .padding(8.dp)
+                    modifier = Modifier.padding(8.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Outlined.DarkMode,
@@ -113,8 +125,7 @@ fun ProfileScreen(
                     )
                 }
                 Box(
-                    modifier = Modifier
-                        .padding(8.dp)
+                    modifier = Modifier.padding(8.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Outlined.Logout,
@@ -172,8 +183,63 @@ fun ProfileScreen(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
+                    if (isEditing) {
+                        OutlinedTextField(
+                            value = name,
+                            onValueChange = { name = it },
+                            label = { Text("Name") },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    } else {
+                        Text(
+                            text = "Name: ${userState.name}",
+                            color = MaterialTheme.colorScheme.onBackground,
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
                     Text(
-                        text = "Name: ${userState.name}",
+                        text = "Email: $email",
+                        color = MaterialTheme.colorScheme.onBackground,
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Button(onClick = {
+                        if (isEditing) {
+                            userVm.updateName(email, name)
+                            userState = userState.copy(name = name)
+                        }
+                        isEditing = !isEditing
+                    }) {
+                        Text(text = if (isEditing) "Save" else "Edit")
+                    }
+                }
+            }
+
+            // New Card for Task Info and Progress Bar
+            Card(
+                modifier = Modifier.padding(16.dp),
+                shape = RoundedCornerShape(16.dp),
+                elevation = CardDefaults.elevatedCardElevation(8.dp)
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "Tasks Overview",
+                        color = MaterialTheme.colorScheme.onBackground,
+                        style = MaterialTheme.typography.headlineSmall
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Text(
+                        text = "Tasks Completed: $tasksCompleted",
                         color = MaterialTheme.colorScheme.onBackground,
                         style = MaterialTheme.typography.bodyLarge
                     )
@@ -181,7 +247,30 @@ fun ProfileScreen(
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Text(
-                        text = "Email: $email",
+                        text = "Tasks In Progress: $tasksInProgress",
+                        color = MaterialTheme.colorScheme.onBackground,
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    val progress = if (totalTasks > 0) tasksCompleted.toFloat() / totalTasks else 0f
+
+                    // Styled Progress Bar
+                    LinearProgressIndicator(
+                        progress = { progress },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(10.dp)
+                            .clip(RoundedCornerShape(5.dp)),
+                        color = MaterialTheme.colorScheme.primary,
+                        trackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Text(
+                        text = "${(progress * 100).toInt()}% Complete",
                         color = MaterialTheme.colorScheme.onBackground,
                         style = MaterialTheme.typography.bodyLarge
                     )

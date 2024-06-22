@@ -39,6 +39,8 @@ fun MainAppScreens(bottomNavController : NavHostController,
         ) }
         composable(NavItem.List.path) { ListScreen(
             taskVm,
+            userVm,
+            vm,
             onTaskButtonClicked = { taskId, temp ->
                 navController.navigate(NavItem.TaskDetails.path + "/$taskId" + "/$temp")
             }

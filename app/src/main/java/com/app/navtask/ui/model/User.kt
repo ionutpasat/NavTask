@@ -11,5 +11,6 @@ data class User(
     val email: String = "",
     var name: String = "",
     var profileImageUri: String = "",
-    var themePreference: Boolean = false
+    var tasksCompleted: Int = 0,
+    var tasksInProgress: Int = 0
 )

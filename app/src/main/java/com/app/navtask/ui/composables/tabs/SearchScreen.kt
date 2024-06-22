@@ -2,6 +2,7 @@
 
 import android.util.Log
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -48,8 +49,6 @@ import com.app.navtask.R
 import com.app.navtask.ui.dao.WeatherService
 import com.app.navtask.ui.model.Task
 import com.app.navtask.ui.model.WeatherResponse
-import com.app.navtask.ui.theme.md_theme_dark_secondaryContainer
-import com.app.navtask.ui.theme.typography
 import com.app.navtask.ui.viewmodel.TaskViewModel
 import kotlinx.coroutines.launch
 import retrofit2.Call
@@ -96,7 +95,6 @@ import retrofit2.Response
                  leadingIcon = {
                      IconButton(onClick = {
                          focusManager.clearFocus()
-                         focusManager.moveFocus(FocusDirection.Down)
                          keyboardController?.show()
                      }) {
                          Icon(Icons.Default.Search, contentDescription = null)
@@ -125,13 +123,21 @@ import retrofit2.Response
 
          Spacer(modifier = Modifier.height(16.dp))
 
-         SortMenu(
-             selectedOption = sortOption,
-             onOptionSelected = { option ->
-                 sortOption = option
-                 searchResults = sortTasks(searchResults, option)
-             }
-         )
+         Row(
+             modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
+         ) {
+             SortMenu(
+                 selectedOption = sortOption,
+                 onOptionSelected = { option ->
+                     sortOption = option
+                     coroutineScope.launch {
+                         searchResults = taskVm.searchTasks("%$searchQuery%")
+                         searchResults = sortTasks(searchResults, sortOption)
+                     }
+                 }
+             )
+         }
 
          Spacer(modifier = Modifier.height(16.dp))
 
@@ -143,7 +149,7 @@ import retrofit2.Response
                  modifier = Modifier.align(Alignment.CenterHorizontally)
              )
          } else {
-             LazyColumn(modifier = Modifier.fillMaxSize()) {
+             LazyColumn(modifier = Modifier.fillMaxSize().padding(bottom = 64.dp)) {
                  items(searchResults) { task ->
                      TaskItem(task, onTaskButtonClicked)
                  }
@@ -191,7 +197,7 @@ import retrofit2.Response
  @Composable
  fun TaskItem(task: Task,
               onTaskButtonClicked: (taskId: String, temp: String) -> Unit) {
-     var temp by remember { mutableStateOf("") }
+     var temp by remember { mutableStateOf("Loading...") }
 
      LaunchedEffect(temp) {
          val call = WeatherService.instance.getWeather(task.latitude.toString(),

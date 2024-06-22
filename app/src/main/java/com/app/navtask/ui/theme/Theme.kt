@@ -93,8 +93,8 @@ fun NavTaskTheme(
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
 
-        darkTheme -> lightColors
-        else -> darkColors
+        darkTheme -> darkColors
+        else -> lightColors
     }
     val view = LocalView.current
     if (!view.isInEditMode) {

@@ -16,8 +16,15 @@ interface UserDao {
     @Query("SELECT * FROM users")
     suspend fun getAllUsers(): List<User>
 
-    @Query("UPDATE users SET themePreference = :themePreference WHERE email = :email")
-    suspend fun updateThemePreference(email: String, themePreference: Boolean)
+    @Query("UPDATE users SET name = :name WHERE email = :email")
+    suspend fun updateName(email: String, name: String)
 
+    @Query("UPDATE users SET tasksInProgress = tasksInProgress + 1 WHERE email = :email")
+    suspend fun incrementTasksInProgress(email: String)
 
+    @Query("UPDATE users SET tasksInProgress = tasksInProgress - 1, tasksCompleted = tasksCompleted + 1 WHERE email = :email")
+    suspend fun incrementTasksCompleted(email: String)
+
+    @Query("UPDATE users SET tasksInProgress = tasksInProgress - 1 WHERE email = :email")
+    suspend fun decrementTasksInProgress(email: String)
 }

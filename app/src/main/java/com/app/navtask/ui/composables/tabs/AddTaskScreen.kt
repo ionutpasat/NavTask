@@ -56,7 +56,9 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.app.navtask.ui.components.ReminderReceiver
 import com.app.navtask.ui.model.Task
+import com.app.navtask.ui.viewmodel.FbViewModel
 import com.app.navtask.ui.viewmodel.TaskViewModel
+import com.app.navtask.ui.viewmodel.UserViewModel
 import com.google.accompanist.insets.navigationBarsWithImePadding
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.Dispatchers
@@ -71,11 +73,14 @@ import java.util.Locale
 @Composable
 fun AddTaskScreen(
     taskVm: TaskViewModel,
+    userVm: UserViewModel,
+    fbVm: FbViewModel,
     onAddButtonClicked: () -> Unit,
     navController: NavHostController
 )
 {
     val context = LocalContext.current
+    val email = fbVm.getSignedInUser()?.email ?: "default@email.com"
     var scrollState = rememberScrollState()
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
@@ -272,9 +277,10 @@ fun AddTaskScreen(
             onClick = {
                 val fullLocation = "$streetAndNumber, $city, $country"
                 val task = Task(0, title, description, priority.toInt(),
-                    fullLocation, coordinates.latitude, coordinates.longitude, date)
+                    fullLocation, coordinates.latitude, coordinates.longitude, date, "Work")
                 taskVm.addTask(task)
                 scheduleNotification(context, datePickerState, title)
+                userVm.incrementTasksInProgress(email)
                 onAddButtonClicked()
             }
         ) {
@@ -302,7 +308,7 @@ fun ReadonlyTextField(
                 "Low" -> Color.Green
                 "Medium" -> Color(0xFFffcc00)
                 "High" -> Color.Red
-                else -> Color.Black
+                else -> MaterialTheme.colorScheme.onTertiary
             }),
             singleLine = true
         )
