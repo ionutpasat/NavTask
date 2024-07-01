@@ -14,5 +14,6 @@ data class Task(
     val latitude : Double,
     val longitude : Double,
     val date : String,
-    val type : String
+    val type : String,
+    val user : String
 )

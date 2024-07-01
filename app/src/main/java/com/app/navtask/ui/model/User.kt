@@ -12,5 +12,5 @@ data class User(
     var name: String = "",
     var profileImageUri: String = "",
     var tasksCompleted: Int = 0,
-    var tasksInProgress: Int = 0
+    var tasksInProgress: Int = 0,
 )

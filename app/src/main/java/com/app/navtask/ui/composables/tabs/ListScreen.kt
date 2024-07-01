@@ -99,10 +99,11 @@ fun ListScreen(
 ) {
     val coroutineScope = rememberCoroutineScope()
     var taskList by remember { mutableStateOf<List<Task>>(emptyList()) }
+    val email = fbVm.getSignedInUser()?.email ?: "default@email.com"
 
     LaunchedEffect(Unit) {
         coroutineScope.launch {
-            taskList = taskVm.getAllTasks()
+            taskList = taskVm.getAllTasks(email)
         }
     }
 
@@ -153,10 +154,10 @@ fun ListScreen(
                     onTaskButtonClicked,
                     taskVm,
                     userVm,
-                    fbVm,
+                    email,
                     onTaskCompleted = {
                         coroutineScope.launch {
-                            taskList = taskVm.getAllTasks()
+                            taskList = taskVm.getAllTasks(email)
                         }
                     }
                 )
@@ -184,7 +185,7 @@ fun TodoItem(
     onButtonClicked: (taskId: String, temp: String, precip: String) -> Unit,
     taskVm: TaskViewModel,
     userVm: UserViewModel,
-    fbVm: FbViewModel,
+    email: String,
     onTaskCompleted: () -> Unit
 ) {
     var temp by remember { mutableStateOf("Loading...") }
@@ -193,7 +194,6 @@ fun TodoItem(
     var dismissRight by remember { mutableStateOf(false) }
     var dismissLeft by remember { mutableStateOf(false) }
     var showMenu by remember { mutableStateOf(false) }
-    val email = fbVm.getSignedInUser()?.email ?: "default@email.com"
     val density = LocalDensity.current.density
     val context = LocalContext.current
     val swipeThreshold = 400f

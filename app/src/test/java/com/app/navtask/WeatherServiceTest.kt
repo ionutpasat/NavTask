@@ -39,7 +39,8 @@ class WeatherServiceTest {
     fun testGetWeather() = runBlocking {
         val weatherResp = WeatherResponse(
             daily = Daily(
-                temperature_2m_max = listOf(1.0, 2.0, 3.0)
+                temperature_2m_max = listOf(1.0, 2.0, 3.0),
+                precipitation_probability_max = listOf(10, 20, 30)
             )
         )
 

@@ -47,6 +47,7 @@ import com.app.navtask.ui.theme.md_theme_dark_primary
 import com.app.navtask.ui.theme.md_theme_dark_secondary
 import com.app.navtask.ui.theme.md_theme_light_error
 import com.app.navtask.ui.theme.typography
+import com.app.navtask.ui.viewmodel.FbViewModel
 import com.app.navtask.ui.viewmodel.TaskViewModel
 import retrofit2.Call
 import retrofit2.Callback
@@ -59,12 +60,14 @@ import retrofit2.Response
 @Composable
 fun HomeScreen(
     taskVm: TaskViewModel,
+    fbVm: FbViewModel,
     onAddTaskButtonClicked: () -> Unit
 ) {
     var task by remember { mutableStateOf<Task?>(null) }
+    val email = fbVm.getSignedInUser()?.email ?: "default@email.com"
 
     LaunchedEffect(key1 = taskVm) {
-        task = taskVm.getFirstTask()
+        task = taskVm.getFirstTask(email)
     }
 
     Scaffold(

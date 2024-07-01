@@ -8,6 +8,7 @@ import android.content.Intent
 import android.location.Address
 import android.location.Geocoder
 import android.os.Build
+import android.provider.CalendarContract
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -95,6 +96,14 @@ fun AddTaskScreen(
     var showDatePicker by remember { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState()
     var coordinates: LatLng by remember { mutableStateOf(LatLng(44.42666, 26.10243)) }
+    var calendarAccess: Boolean by remember { mutableStateOf(false) }
+
+    val calendarPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { isGranted ->
+            calendarAccess = isGranted
+        }
+    )
 
     val notificationPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
@@ -107,6 +116,7 @@ fun AddTaskScreen(
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
         }
+        calendarPermissionLauncher.launch(Manifest.permission.WRITE_CALENDAR)
     }
 
     LaunchedEffect(streetAndNumber, city, country) {
@@ -297,12 +307,31 @@ fun AddTaskScreen(
                 val fullLocation = "$streetAndNumber, $city, $country"
                 val task = Task(
                     0, title, description, priority.toInt(),
-                    fullLocation, coordinates.latitude, coordinates.longitude, date, "Work"
+                    fullLocation, coordinates.latitude, coordinates.longitude, date, "Work", email
                 )
                 taskVm.addTask(task)
                 scheduleNotification(context, datePickerState, title)
                 userVm.incrementTasksInProgress(email)
                 onAddButtonClicked()
+
+                if (calendarAccess) {
+                    val intent = Intent(Intent.ACTION_INSERT).apply {
+                        data = CalendarContract.Events.CONTENT_URI
+                        putExtra(CalendarContract.Events.TITLE, title)
+                        putExtra(CalendarContract.Events.DESCRIPTION, description)
+                        putExtra(CalendarContract.Events.EVENT_LOCATION, fullLocation)
+                        val startMillis = Calendar.getInstance().apply {
+                            timeInMillis =
+                                datePickerState.selectedDateMillis ?: System.currentTimeMillis()
+                        }.timeInMillis
+                        putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, startMillis)
+                        putExtra(
+                            CalendarContract.EXTRA_EVENT_END_TIME,
+                            startMillis + 60 * 60 * 1000
+                        )
+                    }
+                    context.startActivity(intent)
+                }
             }
         ) {
             Text("Add Task")

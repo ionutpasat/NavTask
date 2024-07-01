@@ -50,6 +50,7 @@ import com.app.navtask.R
 import com.app.navtask.ui.dao.WeatherService
 import com.app.navtask.ui.model.Task
 import com.app.navtask.ui.model.WeatherResponse
+import com.app.navtask.ui.viewmodel.FbViewModel
 import com.app.navtask.ui.viewmodel.TaskViewModel
 import kotlinx.coroutines.launch
 import retrofit2.Call
@@ -61,6 +62,7 @@ import retrofit2.Response
  */
  @Composable
  fun SearchScreen(taskVm: TaskViewModel = viewModel(),
+                  fbVm: FbViewModel = viewModel(),
                   onTaskButtonClicked: (taskId: String, temp: String, precip: String) -> Unit) {
      var searchQuery by remember { mutableStateOf("") }
      var searchResults by remember { mutableStateOf(listOf<Task>()) }
@@ -68,6 +70,7 @@ import retrofit2.Response
      val coroutineScope = rememberCoroutineScope()
      val focusManager = LocalFocusManager.current
      val keyboardController = LocalSoftwareKeyboardController.current
+     val email = fbVm.getSignedInUser()?.email ?: "default@email.com"
 
      LaunchedEffect(Unit) {
          keyboardController?.show()
@@ -88,7 +91,7 @@ import retrofit2.Response
                  onValueChange = {
                      searchQuery = it
                      coroutineScope.launch {
-                         searchResults = taskVm.searchTasks("%$searchQuery%")
+                         searchResults = taskVm.searchTasks("%$searchQuery%", email)
                          searchResults = sortTasks(searchResults, sortOption)
                      }
                  },
@@ -133,7 +136,7 @@ import retrofit2.Response
                  onOptionSelected = { option ->
                      sortOption = option
                      coroutineScope.launch {
-                         searchResults = taskVm.searchTasks("%$searchQuery%")
+                         searchResults = taskVm.searchTasks("%$searchQuery%", email)
                          searchResults = sortTasks(searchResults, sortOption)
                      }
                  }
@@ -187,8 +190,8 @@ import retrofit2.Response
 
  fun sortTasks(tasks: List<Task>, sortOption: String): List<Task> {
      return when (sortOption) {
-         "Date Ascending" -> tasks.sortedBy { it.date }
-         "Date Descending" -> tasks.sortedByDescending { it.date }
+         "Date Ascending" -> tasks.sortedByDescending { it.priority }.sortedBy { it.date }
+         "Date Descending" -> tasks.sortedByDescending { it.priority }.sortedByDescending { it.date }
          "Importance Ascending" -> tasks.sortedBy { it.priority }
          "Importance Descending" -> tasks.sortedByDescending { it.priority }
          else -> tasks

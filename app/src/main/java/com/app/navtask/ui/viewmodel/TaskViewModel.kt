@@ -17,8 +17,8 @@ class TaskViewModel(
             }
         }
 
-        suspend fun getAllTasks(): List<Task> {
-            return taskDao.getAllTasks()
+        suspend fun getAllTasks(user: String): List<Task> {
+            return taskDao.getAllTasks(user)
         }
 
         suspend fun getTaskById(id: Int): Task? {
@@ -31,12 +31,12 @@ class TaskViewModel(
             }
         }
 
-        suspend fun searchTasks(query: String): List<Task> {
-            return taskDao.searchTasks(query)
+        suspend fun searchTasks(query: String, user: String): List<Task> {
+            return taskDao.searchTasks(query, user)
         }
 
-        suspend fun getFirstTask(): Task? {
-            return taskDao.getFirstTask()
+        suspend fun getFirstTask(user: String): Task? {
+            return taskDao.getFirstTask(user)
         }
 
         fun updateTask(id: Int, title: String, description: String, location: String, priority: Int, date: String) {
